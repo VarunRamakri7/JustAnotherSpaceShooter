@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include <glad/glad.h>
 
 #include <fstream>
 #include <iostream>
@@ -44,6 +44,8 @@ void printProgramLinkError(GLuint program)
    delete[] logMsg;
 }
 
+/* Not Using Compute shader, and as a result not using glew */
+/*
 GLuint InitShader(const char* computeShaderFile)
 {
    bool error = false;
@@ -54,7 +56,7 @@ GLuint InitShader(const char* computeShaderFile)
       GLchar*      source;
    }  shaders[1] =
    {
-      { computeShaderFile, GL_COMPUTE_SHADER, NULL }
+      // { computeShaderFile, GL_COMPUTE_SHADER, NULL }
    };
 
    GLuint program = glCreateProgram();
@@ -87,7 +89,6 @@ GLuint InitShader(const char* computeShaderFile)
       glAttachShader(program, shader);
    }
 
-   /* link  and error check */
    glLinkProgram(program);
 
    GLint  linked;
@@ -105,11 +106,11 @@ GLuint InitShader(const char* computeShaderFile)
       return -1;
    }
 
-   /* use program object */
    glUseProgram(program);
 
    return program;
 }
+*/
 
 
 // Create a GLSL program object from vertex and fragment shader files
