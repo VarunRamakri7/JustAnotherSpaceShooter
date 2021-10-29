@@ -152,11 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\glad.c" />
-    <ClCompile Include="InitShader.cpp" />
-    <ClCompile Include="JustAnotherSpaceShooter.cpp" />
+    <ClCompile Include="src\InitShader.cpp" />
+    <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
+    <ClCompile Include="src\LoadMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InitShader.h" />
+    <ClInclude Include="src\InitShader.h" />
+    <ClInclude Include="src\LoadMesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

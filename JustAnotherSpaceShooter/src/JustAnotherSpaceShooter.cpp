@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "InitShader.h"
+#include "LoadMesh.h"
 
 GLuint shader_program = -1;
 glm::vec2 window_dims = glm::vec2(1024, 768);
@@ -43,7 +44,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 1);
+    glfwWindowHint(GLFW_SAMPLES, 16);
 
     const char* window_name = "Just Another Space Shooter";
     GLFWwindow* window = glfwCreateWindow(window_dims.x, window_dims.y, window_name, NULL, NULL);

@@ -4,8 +4,6 @@
 #include <iostream>
 using namespace std;
 
-//Adapted from Edward Angels InitShader code
-
 // Create a NULL-terminated string by reading the provided file
 static char* readShaderSource(const char* shaderFile)
 {
@@ -43,75 +41,6 @@ void printProgramLinkError(GLuint program)
    std::cerr << logMsg << std::endl;
    delete[] logMsg;
 }
-
-/* Not Using Compute shader, and as a result not using glew */
-/*
-GLuint InitShader(const char* computeShaderFile)
-{
-   bool error = false;
-   struct Shader
-   {
-      const char*  filename;
-      GLenum       type;
-      GLchar*      source;
-   }  shaders[1] =
-   {
-      // { computeShaderFile, GL_COMPUTE_SHADER, NULL }
-   };
-
-   GLuint program = glCreateProgram();
-
-   for (int i = 0; i < 1; ++i)
-   {
-      Shader& s = shaders[i];
-      s.source = readShaderSource(s.filename);
-      if (shaders[i].source == NULL)
-      {
-         std::cerr << "Failed to read " << s.filename << std::endl;
-         error = true;
-      }
-
-      GLuint shader = glCreateShader(s.type);
-      glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
-      glCompileShader(shader);
-
-      GLint  compiled;
-      glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-      if (!compiled)
-      {
-         std::cerr << s.filename << " failed to compile:" << std::endl;
-         printShaderCompileError(shader);
-         error = true;
-      }
-
-      delete[] s.source;
-
-      glAttachShader(program, shader);
-   }
-
-   glLinkProgram(program);
-
-   GLint  linked;
-   glGetProgramiv(program, GL_LINK_STATUS, &linked);
-   if (!linked)
-   {
-      std::cerr << "Shader program failed to link" << std::endl;
-      printProgramLinkError(program);
-
-      error = true;
-   }
-
-   if (error == true)
-   {
-      return -1;
-   }
-
-   glUseProgram(program);
-
-   return program;
-}
-*/
-
 
 // Create a GLSL program object from vertex and fragment shader files
 GLuint InitShader(const char* vShaderFile, const char* fShaderFile)
