@@ -77,12 +77,16 @@ void display(GLFWwindow* window)
     glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
 
     glUseProgram(model_shader);
+
     int projection_loc = glGetUniformLocation(model_shader, "projection");
-    int view_loc = glGetUniformLocation(model_shader, "view");
-    int model_loc = glGetUniformLocation(model_shader, "model");
     glUniformMatrix4fv(projection_loc, 1, false, glm::value_ptr(projection));
+    
+    int view_loc = glGetUniformLocation(model_shader, "view");
     glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
+    
+    int model_loc = glGetUniformLocation(model_shader, "model");
     glUniformMatrix4fv(model_loc, 1, false, glm::value_ptr(model));
+    
     glBindVertexArray(space_shooter_1.mVao);
     glDrawElements(GL_TRIANGLES, space_shooter_1.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
 }
@@ -169,8 +173,7 @@ void resize(GLFWwindow* window, int width, int height)
     aspectRatio = (float)width / height; // Update aspect ratio
 
     // Update window dimensions
-    window_dims.x = width;
-    window_dims.y = height;
+    window_dims = glm::vec2(width, height);
 
     // Fit viewport to window
     glViewport(0, 0, width, height);
