@@ -12,9 +12,15 @@
 #include "LoadMesh.h"
 #include "LoadTexture.h"
 
+// Default window dimensions
+#define WIDTH 1024
+#define HEIGHT 768
+
+
 GLuint model_shader = -1;
 MeshData space_shooter_1;
-glm::vec2 window_dims = glm::vec2(1024, 768);
+glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
+float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 // camera
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -54,7 +60,7 @@ void init_game()
     /* Texture initialization */
 }
 
-void init()
+void display(GLFWwindow* window)
 {
     glm::vec3 position = glm::vec3(0, 0, 0);
     glm::vec3 scale = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -68,7 +74,7 @@ void init()
     // glm::mat4 view = glm::lookAt(camera_position, camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
     //                          glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)window_dims.x / window_dims.y, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
 
     glUseProgram(model_shader);
     int projection_loc = glGetUniformLocation(model_shader, "projection");
@@ -79,6 +85,11 @@ void init()
     glUniformMatrix4fv(model_loc, 1, false, glm::value_ptr(model));
     glBindVertexArray(space_shooter_1.mVao);
     glDrawElements(GL_TRIANGLES, space_shooter_1.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+}
+
+void idle()
+{
+
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -144,6 +155,27 @@ void mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
 }
 
+void resize(GLFWwindow* window, int width, int height)
+{
+    std::printf("New window dimensions: (%.2u, %.2u)\n", width, height);
+
+    // Prevent dividing by zero
+    if (height == 0)
+    {
+        height = 1;
+    }
+
+    // Preserve aspect ratio and update viewport for resizing
+    aspectRatio = (float)width / height; // Update aspect ratio
+
+    // Update window dimensions
+    window_dims.x = width;
+    window_dims.y = height;
+
+    // Fit viewport to window
+    glViewport(0, 0, width, height);
+}
+
 int main(void)
 {
     glfwInit();
@@ -161,6 +193,7 @@ int main(void)
     glfwSetKeyCallback(window, keyboard);
     glfwSetCursorPosCallback(window, mouse_cursor);
     glfwSetMouseButtonCallback(window, mouse_button);
+    glfwSetWindowSizeCallback(window, resize);
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -177,7 +210,7 @@ int main(void)
 
         processInput(window);
 
-        init();
+        display(window);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
