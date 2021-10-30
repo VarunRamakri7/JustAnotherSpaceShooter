@@ -162,6 +162,10 @@
     <ClInclude Include="src\LoadMesh.h" />
     <ClInclude Include="src\LoadTexture.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model_shader_fs.glsl" />
+    <None Include="shaders\model_shader_vs.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

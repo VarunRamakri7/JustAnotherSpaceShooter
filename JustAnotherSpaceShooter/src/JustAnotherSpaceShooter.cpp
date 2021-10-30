@@ -29,12 +29,93 @@ float fov   =  45.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-void mouse_cursor(GLFWwindow* window, double x, double y);
-void mouse_button(GLFWwindow* window, int button, int action, int mods);
-void init_game();
-void processInput(GLFWwindow *window);
+void init_game()
+{
+    /* Shader initialization */
+    {
+        std::string shader_folder = "shaders\\";
+        std::string model_shader_vertex_fname = shader_folder + "model_shader_vs.glsl";
+        std::string model_shader_fragment_fname = shader_folder + "model_shader_fs.glsl";
+        model_shader = InitShader(model_shader_vertex_fname.c_str(), model_shader_fragment_fname.c_str());
+    }
+    /* Shader initialization */
+
+    /* Model initialization */
+    {
+        std::string model_folder = "data\\models\\";
+        std::string space_shooter_1_fname = model_folder + "Amago0.obj";
+        space_shooter_1 = LoadMesh(space_shooter_1_fname);
+    }
+    /* Model initialization */
+
+    /* Texture initialization */
+    {
+    }
+    /* Texture initialization */
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    window_dims = glm::vec2(width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 3.5f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+}
+
+void mouse_cursor(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+}
+
+void mouse_button(GLFWwindow* window, int button, int action, int mods)
+{
+}
 
 int main(void)
 {
@@ -99,92 +180,4 @@ int main(void)
 
     glfwTerminate();
     return 0;
-}
-
-void init_game()
-{
-    /* Shader initialization */
-    {
-        std::string shader_folder = "shaders\\";
-        std::string model_shader_vertex_fname = shader_folder + "model_shader_vs.glsl";
-        std::string model_shader_fragment_fname = shader_folder + "model_shader_fs.glsl";
-        model_shader = InitShader(model_shader_vertex_fname.c_str(), model_shader_fragment_fname.c_str());
-    }
-    /* Shader initialization */
-
-    /* Model initialization */
-    {
-        std::string model_folder = "data\\models\\";
-        std::string space_shooter_1_fname = model_folder + "Amago0.obj";
-        space_shooter_1 = LoadMesh(space_shooter_1_fname);
-    }
-    /* Model initialization */
-
-    /* Texture initialization */
-    {
-    }
-    /* Texture initialization */
-}
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-    window_dims = glm::vec2(width, height);
-}
-
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    float cameraSpeed = 3.5f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
-void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-}
-
-void mouse_cursor(GLFWwindow *window, double xpos, double ypos)
-{
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
-}
-
-void mouse_button(GLFWwindow *window, int button, int action, int mods)
-{
 }
