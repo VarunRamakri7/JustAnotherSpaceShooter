@@ -54,6 +54,33 @@ void init_game()
     /* Texture initialization */
 }
 
+void init()
+{
+    glm::vec3 position = glm::vec3(0, 0, 0);
+    glm::vec3 scale = glm::vec3(0.1f, 0.1f, 0.1f);
+    glm::vec3 rotation_axes = glm::vec3(0, 1, 0);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model - glm::scale(model, scale * space_shooter_1.mScaleFactor);
+    model = glm::rotate(model, glm::radians(0.0f), rotation_axes);
+
+    // glm::mat4 view = glm::lookAt(camera_position, camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
+    //                          glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)window_dims.x / window_dims.y, 0.1f, 100.0f);
+
+    glUseProgram(model_shader);
+    int projection_loc = glGetUniformLocation(model_shader, "projection");
+    int view_loc = glGetUniformLocation(model_shader, "view");
+    int model_loc = glGetUniformLocation(model_shader, "model");
+    glUniformMatrix4fv(projection_loc, 1, false, glm::value_ptr(projection));
+    glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
+    glUniformMatrix4fv(model_loc, 1, false, glm::value_ptr(model));
+    glBindVertexArray(space_shooter_1.mVao);
+    glDrawElements(GL_TRIANGLES, space_shooter_1.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+}
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -150,29 +177,7 @@ int main(void)
 
         processInput(window);
 
-        glm::vec3 position = glm::vec3(0, 0, 0);
-        glm::vec3 scale = glm::vec3(0.1f, 0.1f, 0.1f);
-        glm::vec3 rotation_axes = glm::vec3(0, 1, 0);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, position);
-        model - glm::scale(model, scale * space_shooter_1.mScaleFactor);
-        model = glm::rotate(model, glm::radians(0.0f), rotation_axes);
-
-        // glm::mat4 view = glm::lookAt(camera_position, camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
-        //                          glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) window_dims.x / window_dims.y, 0.1f, 100.0f);
-
-        glUseProgram(model_shader);
-        int projection_loc = glGetUniformLocation(model_shader, "projection");
-        int view_loc = glGetUniformLocation(model_shader, "view");
-        int model_loc = glGetUniformLocation(model_shader, "model");
-        glUniformMatrix4fv(projection_loc, 1, false, glm::value_ptr(projection));
-        glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
-        glUniformMatrix4fv(model_loc, 1, false, glm::value_ptr(model));
-        glBindVertexArray(space_shooter_1.mVao);
-        glDrawElements(GL_TRIANGLES, space_shooter_1.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+        init();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
