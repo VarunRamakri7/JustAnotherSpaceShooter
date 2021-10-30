@@ -27,12 +27,18 @@
     <ClCompile Include="src\LoadMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\LoadTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InitShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\LoadMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LoadTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

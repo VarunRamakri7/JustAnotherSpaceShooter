@@ -155,10 +155,12 @@
     <ClCompile Include="src\InitShader.cpp" />
     <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
     <ClCompile Include="src\LoadMesh.cpp" />
+    <ClCompile Include="src\LoadTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InitShader.h" />
     <ClInclude Include="src\LoadMesh.h" />
+    <ClInclude Include="src\LoadTexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
