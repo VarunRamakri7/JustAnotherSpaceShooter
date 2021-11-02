@@ -49,7 +49,7 @@ void init_game()
     /* Model initialization */
     {
         std::string model_folder = "data\\models\\";
-        std::string space_shooter_1_fname = model_folder + "Amago0.obj";
+        std::string space_shooter_1_fname = model_folder + "cube.obj";
         space_shooter_1 = LoadMesh(space_shooter_1_fname);
     }
     /* Model initialization */
@@ -74,7 +74,8 @@ void display(GLFWwindow* window)
     // glm::mat4 view = glm::lookAt(camera_position, camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
     //                          glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+    // glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+    glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -2.0f, +2.0f, 0.1f, 200.0f);
 
     glUseProgram(model_shader);
 
