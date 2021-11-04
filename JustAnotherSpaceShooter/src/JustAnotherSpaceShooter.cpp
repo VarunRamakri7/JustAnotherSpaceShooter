@@ -42,16 +42,16 @@ float lastFrame = 0.0f;
 // World Related data
 const glm::vec3 origin = glm::vec3(0.0f);
 float moveFactor = 50.0f;
-int scaleFactor = 2.0f;
+float scaleFactor = 1.0f;
 
 // Spaceship related
 glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 10.0f);
-glm::vec3 spaceship_scale = glm::vec3(0.1f);
+glm::vec3 spaceship_scale = glm::vec3(1.0f);
 glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // Terrain related data
 glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.3f, 5.0f);
-glm::vec3 terrainStart_scale = glm::vec3(4.0f);
+glm::vec3 terrainStart_scale = glm::vec3(1.0f);
 glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void init_game()
@@ -70,7 +70,6 @@ void init_game()
         std::string terrain_fs_fname = shader_folder + "terrain_fs.glsl";
         terrain_shader = InitShader(terrain_vs_fname.c_str(), terrain_fs_fname.c_str());
     }
-    /* Shader initialization */
 
     /* Model initialization */
     {
@@ -79,21 +78,23 @@ void init_game()
         // Get spaceship
         std::string spaceship_fname = model_folder + "spaceship_main.obj";
         spaceship_mesh = LoadMesh(spaceship_fname);
+        std::cout << "Spaceship Scale Factor: " << spaceship_mesh.mScaleFactor << std::endl;
 
         // Get Terrain
         std::string terrainStart_fname = model_folder + "terrain_start.obj";
         terrainStart_mesh = LoadMesh(terrainStart_fname);
+        std::cout << "Terrain Scale Factor: " << terrainStart_mesh.mScaleFactor << std::endl;
     }
-    /* Model initialization */
 
     /* Texture initialization */
     {
     }
-    /* Texture initialization */
 }
 
 void display(GLFWwindow* window)
 {
+    /// TODO: Fix mesh scales
+
     // Set draw mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -104,13 +105,13 @@ void display(GLFWwindow* window)
     // Spaceship matrix
     glm::mat4 spaceship_matrix = glm::mat4(1.0f);
     spaceship_matrix = glm::translate(spaceship_matrix, spaceship_pos);
-    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale * spaceship_mesh.mScaleFactor);
+    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale);
     spaceship_matrix = glm::rotate(spaceship_matrix, glm::radians(0.0f), spaceship_rot);
 
     // Terrain Matrices
     glm::mat4 terrainStart_matrix = glm::mat4(1.0f);
     terrainStart_matrix = glm::translate(terrainStart_matrix, terrainStart_pos);
-    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor);
+    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale);
     terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
 
     glUseProgram(spaceship_shader);
@@ -133,7 +134,6 @@ void display(GLFWwindow* window)
 
     glBindVertexArray(terrainStart_mesh.mVao);
     glDrawElements(GL_TRIANGLES, terrainStart_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
-
 }
 
 void idle()
@@ -244,17 +244,22 @@ void mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
     switch ((int)yoffset)
     {
         case 1: // Scroll Up
-            spaceship_scale += scaleFactor; // Increase scale
-            terrainStart_scale *= scaleFactor; // Increase scale
+            scaleFactor++; // Increase scale
             break;
 
         case -1: // Scroll Down
-            spaceship_scale /= scaleFactor; // Decrease scale
-            terrainStart_scale /= scaleFactor; // Decrease scale
+            scaleFactor *= 0.5f; // Decrease scale
             break;
     }
-    
-    std::printf("New Scale: (%.2f, %.2f, %.2f)\n", terrainStart_scale.x, terrainStart_scale.y, terrainStart_scale.z);
+
+    // Update scales
+    spaceship_scale *= scaleFactor;
+    terrainStart_scale *= scaleFactor;
+
+    // Print info
+    std::printf("New scale factor: %0.3f\n", scaleFactor);
+    std::printf("New Spaceship Scale: (%.9f, %.9f, %.9f)\n", spaceship_scale.x, spaceship_scale.y, spaceship_scale.z);
+    std::printf("New Terrain Scale: (%.2f, %.2f, %.2f)\n", terrainStart_scale.x, terrainStart_scale.y, terrainStart_scale.z);
 }
 
 void resize(GLFWwindow* window, int width, int height)
