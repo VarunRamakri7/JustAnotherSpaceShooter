@@ -16,14 +16,18 @@
 #define WIDTH 1024
 #define HEIGHT 768
 
+// Mesh related data
+MeshData spaceship_mesh;
+MeshData terrainStart_mesh;
+GLuint spaceship_shader = -1;
+GLuint terrain_shader = -1;
 
-GLuint model_shader = -1;
-MeshData space_shooter_1;
+// Window related data
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
-// camera
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
+// Camera related data
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 0.1f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 bool firstMouse = true;
@@ -35,22 +39,50 @@ float fov   =  45.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// World Related data
+const glm::vec3 origin = glm::vec3(0.0f);
+float moveFactor = 50.0f;
+int scaleFactor = 2.0f;
+
+// Spaceship related
+glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 10.0f);
+glm::vec3 spaceship_scale = glm::vec3(0.1f);
+glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// Terrain related data
+glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.3f, 5.0f);
+glm::vec3 terrainStart_scale = glm::vec3(4.0f);
+glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+
 void init_game()
 {
     /* Shader initialization */
     {
         std::string shader_folder = "shaders\\";
-        std::string model_shader_vertex_fname = shader_folder + "model_shader_vs.glsl";
-        std::string model_shader_fragment_fname = shader_folder + "model_shader_fs.glsl";
-        model_shader = InitShader(model_shader_vertex_fname.c_str(), model_shader_fragment_fname.c_str());
+
+        // Spaceship Shader
+        std::string spaceship_vs_fname = shader_folder + "spaceship_vs.glsl";
+        std::string spaceship_fs_fname = shader_folder + "spaceship_fs.glsl";
+        spaceship_shader = InitShader(spaceship_vs_fname.c_str(), spaceship_fs_fname.c_str());
+    
+        // Terrain Shader
+        std::string terrain_vs_fname = shader_folder + "terrain_vs.glsl";
+        std::string terrain_fs_fname = shader_folder + "terrain_fs.glsl";
+        terrain_shader = InitShader(terrain_vs_fname.c_str(), terrain_fs_fname.c_str());
     }
     /* Shader initialization */
 
     /* Model initialization */
     {
         std::string model_folder = "data\\models\\";
-        std::string space_shooter_1_fname = model_folder + "spaceship_main.obj";
-        space_shooter_1 = LoadMesh(space_shooter_1_fname);
+        
+        // Get spaceship
+        std::string spaceship_fname = model_folder + "spaceship_main.obj";
+        spaceship_mesh = LoadMesh(spaceship_fname);
+
+        // Get Terrain
+        std::string terrainStart_fname = model_folder + "terrain_start.obj";
+        terrainStart_mesh = LoadMesh(terrainStart_fname);
     }
     /* Model initialization */
 
@@ -63,37 +95,45 @@ void init_game()
 void display(GLFWwindow* window)
 {
     // Set draw mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Model transformations
-    glm::vec3 position = glm::vec3(0, 0, 0);
-    glm::vec3 scale = glm::vec3(0.5f, 0.5f, 0.5f);
-    glm::vec3 rotation_axes = glm::vec3(0, 1, 0);
+    // Setup Orthographic view
+    glm::mat4 view = glm::lookAt(cameraPos, spaceship_pos, cameraUp);
+    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, position);
-    model - glm::scale(model, scale * space_shooter_1.mScaleFactor);
-    model = glm::rotate(model, glm::radians(0.0f), rotation_axes);
+    // Spaceship matrix
+    glm::mat4 spaceship_matrix = glm::mat4(1.0f);
+    spaceship_matrix = glm::translate(spaceship_matrix, spaceship_pos);
+    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale * spaceship_mesh.mScaleFactor);
+    spaceship_matrix = glm::rotate(spaceship_matrix, glm::radians(0.0f), spaceship_rot);
 
-    // glm::mat4 view = glm::lookAt(camera_position, camera_position + glm::vec3(0.0f, 0.0f, -1.0f),
-    //                          glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    // glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
-    glm::mat4 projection = glm::ortho(-500.0f, 500.0f, -500.0f, 500.0f, 0.1f, 1000.0f);
+    // Terrain Matrices
+    glm::mat4 terrainStart_matrix = glm::mat4(1.0f);
+    terrainStart_matrix = glm::translate(terrainStart_matrix, terrainStart_pos);
+    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor);
+    terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
 
-    glUseProgram(model_shader);
+    glUseProgram(spaceship_shader);
+    glUseProgram(terrain_shader);
 
-    int projection_loc = glGetUniformLocation(model_shader, "projection");
+    int projection_loc = glGetUniformLocation(spaceship_shader, "projection");
     glUniformMatrix4fv(projection_loc, 1, false, glm::value_ptr(projection));
     
-    int view_loc = glGetUniformLocation(model_shader, "view");
+    int view_loc = glGetUniformLocation(spaceship_shader, "view");
     glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
     
-    int model_loc = glGetUniformLocation(model_shader, "model");
-    glUniformMatrix4fv(model_loc, 1, false, glm::value_ptr(model));
-    
-    glBindVertexArray(space_shooter_1.mVao);
-    glDrawElements(GL_TRIANGLES, space_shooter_1.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+    int spaceship_loc = glGetUniformLocation(spaceship_shader, "spaceship");
+    glUniformMatrix4fv(spaceship_loc, 1, false, glm::value_ptr(spaceship_matrix));
+
+    int terrainStart_loc = glGetUniformLocation(terrain_shader, "terrainStart");
+    glUniformMatrix4fv(terrainStart_loc, 1, false, glm::value_ptr(terrainStart_matrix));
+
+    glBindVertexArray(spaceship_mesh.mVao);
+    glDrawElements(GL_TRIANGLES, spaceship_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(terrainStart_mesh.mVao);
+    glDrawElements(GL_TRIANGLES, terrainStart_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+
 }
 
 void idle()
@@ -112,7 +152,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 3.5f * deltaTime;
+    float cameraSpeed = 1.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraUp;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -125,6 +165,41 @@ void processInput(GLFWwindow* window)
 
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    std::cout << "key : " << key << ", " << char(key) << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
+
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    {
+        switch (key)
+        {
+            // Move front
+            case 'w':
+            case 'W':
+                spaceship_pos.z += (moveFactor * deltaTime);
+                break;
+
+            // Move back
+            case 's':
+            case 'S':
+                spaceship_pos.z -= (moveFactor * deltaTime);
+                break;
+
+            // Move left
+            case 'a':
+            case 'A':
+                spaceship_pos.x -= (moveFactor * deltaTime);
+                break;
+
+            // Move right
+            case 'd':
+            case 'D':
+                spaceship_pos.x += (moveFactor * deltaTime);
+                break;
+
+            case GLFW_KEY_ESCAPE:
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+                break;
+        }
+    }
 }
 
 void mouse_cursor(GLFWwindow* window, double xpos, double ypos)
@@ -164,6 +239,24 @@ void mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
 }
 
+void mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+    switch ((int)yoffset)
+    {
+        case 1: // Scroll Up
+            spaceship_scale += scaleFactor; // Increase scale
+            terrainStart_scale *= scaleFactor; // Increase scale
+            break;
+
+        case -1: // Scroll Down
+            spaceship_scale /= scaleFactor; // Decrease scale
+            terrainStart_scale /= scaleFactor; // Decrease scale
+            break;
+    }
+    
+    std::printf("New Scale: (%.2f, %.2f, %.2f)\n", terrainStart_scale.x, terrainStart_scale.y, terrainStart_scale.z);
+}
+
 void resize(GLFWwindow* window, int width, int height)
 {
     std::printf("New window dimensions: (%.2u, %.2u)\n", width, height);
@@ -201,6 +294,7 @@ int main(void)
     glfwSetKeyCallback(window, keyboard);
     //glfwSetCursorPosCallback(window, mouse_cursor);
     glfwSetMouseButtonCallback(window, mouse_button);
+    glfwSetScrollCallback(window, mouse_scroll);
     glfwSetWindowSizeCallback(window, resize);
     glEnable(GL_DEPTH_TEST);
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -216,7 +310,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
-        processInput(window);
+        //processInput(window);
 
         display(window);
 
