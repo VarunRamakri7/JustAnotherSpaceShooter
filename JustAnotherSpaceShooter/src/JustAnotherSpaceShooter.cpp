@@ -49,7 +49,7 @@ void init_game()
     /* Model initialization */
     {
         std::string model_folder = "data\\models\\";
-        std::string space_shooter_1_fname = model_folder + "cube.obj";
+        std::string space_shooter_1_fname = model_folder + "spaceship_main.obj";
         space_shooter_1 = LoadMesh(space_shooter_1_fname);
     }
     /* Model initialization */
@@ -62,8 +62,12 @@ void init_game()
 
 void display(GLFWwindow* window)
 {
+    // Set draw mode
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // Model transformations
     glm::vec3 position = glm::vec3(0, 0, 0);
-    glm::vec3 scale = glm::vec3(0.1f, 0.1f, 0.1f);
+    glm::vec3 scale = glm::vec3(0.5f, 0.5f, 0.5f);
     glm::vec3 rotation_axes = glm::vec3(0, 1, 0);
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -75,7 +79,7 @@ void display(GLFWwindow* window)
     //                          glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     // glm::mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
-    glm::mat4 projection = glm::ortho(-2.0f, +2.0f, -2.0f, +2.0f, 0.1f, 200.0f);
+    glm::mat4 projection = glm::ortho(-500.0f, 500.0f, -500.0f, 500.0f, 0.1f, 1000.0f);
 
     glUseProgram(model_shader);
 
@@ -110,9 +114,9 @@ void processInput(GLFWwindow* window)
 
     float cameraSpeed = 3.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        cameraPos += cameraSpeed * cameraUp;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        cameraPos -= cameraSpeed * cameraUp;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -195,11 +199,11 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSetKeyCallback(window, keyboard);
-    glfwSetCursorPosCallback(window, mouse_cursor);
+    //glfwSetCursorPosCallback(window, mouse_cursor);
     glfwSetMouseButtonCallback(window, mouse_button);
     glfwSetWindowSizeCallback(window, resize);
     glEnable(GL_DEPTH_TEST);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     init_game();
 
