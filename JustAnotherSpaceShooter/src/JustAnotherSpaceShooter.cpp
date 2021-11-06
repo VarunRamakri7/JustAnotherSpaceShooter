@@ -96,7 +96,7 @@ void display(GLFWwindow* window)
     /// TODO: Fix mesh scales
 
     // Set draw mode
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Setup Orthographic view
     glm::mat4 view = glm::lookAt(cameraPos, spaceship_pos, cameraUp);
@@ -115,8 +115,6 @@ void display(GLFWwindow* window)
     terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
 
     glUseProgram(spaceship_shader);
-    glUseProgram(terrain_shader);
-
     // Send uniforms to Spaceship shader
     int s_projection_loc = glGetUniformLocation(spaceship_shader, "s_projection");
     glUniformMatrix4fv(s_projection_loc, 1, false, glm::value_ptr(projection));
@@ -124,7 +122,10 @@ void display(GLFWwindow* window)
     glUniformMatrix4fv(s_view_loc, 1, false, glm::value_ptr(view));
     int spaceship_loc = glGetUniformLocation(spaceship_shader, "spaceship");
     glUniformMatrix4fv(spaceship_loc, 1, false, glm::value_ptr(spaceship_matrix));
+    glBindVertexArray(spaceship_mesh.mVao);
+    glDrawElements(GL_TRIANGLES, spaceship_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
     
+    glUseProgram(terrain_shader);
     // Send uniforms to terrain shader
     int t_projection_loc = glGetUniformLocation(terrain_shader, "t_projection");
     glUniformMatrix4fv(t_projection_loc, 1, false, glm::value_ptr(projection));
@@ -132,10 +133,7 @@ void display(GLFWwindow* window)
     glUniformMatrix4fv(t_view_loc, 1, false, glm::value_ptr(view));
     int terrainStart_loc = glGetUniformLocation(terrain_shader, "terrainStart");
     glUniformMatrix4fv(terrainStart_loc, 1, false, glm::value_ptr(terrainStart_matrix));
-
     // Bind VAOs
-    glBindVertexArray(spaceship_mesh.mVao);
-    glDrawElements(GL_TRIANGLES, spaceship_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(terrainStart_mesh.mVao);
     glDrawElements(GL_TRIANGLES, terrainStart_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
 }
