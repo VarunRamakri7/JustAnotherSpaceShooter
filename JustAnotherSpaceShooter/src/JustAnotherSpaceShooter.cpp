@@ -27,7 +27,7 @@ glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 // Camera related data
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 0.1f);
+glm::vec3 cameraPos   = glm::vec3(-2.0f, 2.0f, 0.1f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 bool firstMouse = true;
@@ -45,13 +45,13 @@ float moveFactor = 50.0f;
 float scaleFactor = 1.0f;
 
 // Spaceship related
-glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 10.0f);
+glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 5.0f);
 glm::vec3 spaceship_scale = glm::vec3(1.0f);
 glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // Terrain related data
-glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.3f, 5.0f);
-glm::vec3 terrainStart_scale = glm::vec3(1.0f);
+glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.5f, 5.0f);
+glm::vec3 terrainStart_scale = glm::vec3(3.0f);
 glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void init_game()
@@ -93,25 +93,24 @@ void init_game()
 
 void display(GLFWwindow* window)
 {
-    /// TODO: Fix mesh scales
-
     // Set draw mode
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Setup Orthographic view
-    glm::mat4 view = glm::lookAt(cameraPos, spaceship_pos, cameraUp);
+    glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
+    glm::mat4 view = glm::lookAt(cameraPos, camLookAt, cameraUp);
     glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
 
     // Spaceship matrix
     glm::mat4 spaceship_matrix = glm::mat4(1.0f);
     spaceship_matrix = glm::translate(spaceship_matrix, spaceship_pos);
-    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale);
+    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale * spaceship_mesh.mScaleFactor /** scaleFactor*/);
     spaceship_matrix = glm::rotate(spaceship_matrix, glm::radians(0.0f), spaceship_rot);
 
     // Terrain Matrices
     glm::mat4 terrainStart_matrix = glm::mat4(1.0f);
     terrainStart_matrix = glm::translate(terrainStart_matrix, terrainStart_pos);
-    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale);
+    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor * scaleFactor);
     terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
 
     glUseProgram(spaceship_shader);
@@ -173,28 +172,30 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         switch (key)
         {
-            // Move front
+            // Move terrain up
             case 'w':
             case 'W':
                 spaceship_pos.z += (moveFactor * deltaTime);
+                ///terrainStart_pos.y += (moveFactor * deltaTime);
                 break;
 
-            // Move back
+            // Move terrain back
             case 's':
             case 'S':
                 spaceship_pos.z -= (moveFactor * deltaTime);
+                //terrainStart_pos.y -= (moveFactor * deltaTime);
                 break;
 
             // Move left
             case 'a':
             case 'A':
-                spaceship_pos.x -= (moveFactor * deltaTime);
+                spaceship_pos.x += (moveFactor * deltaTime);
                 break;
 
             // Move right
             case 'd':
             case 'D':
-                spaceship_pos.x += (moveFactor * deltaTime);
+                spaceship_pos.x -= (moveFactor * deltaTime);
                 break;
 
             case GLFW_KEY_ESCAPE:
@@ -246,7 +247,7 @@ void mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
     switch ((int)yoffset)
     {
         case 1: // Scroll Up
-            scaleFactor++; // Increase scale
+            scaleFactor += 0.5f; // Increase scale
             break;
 
         case -1: // Scroll Down
@@ -255,12 +256,12 @@ void mouse_scroll(GLFWwindow* window, double xoffset, double yoffset)
     }
 
     // Update scales
-    spaceship_scale *= scaleFactor;
+    //spaceship_scale *= scaleFactor;
     terrainStart_scale *= scaleFactor;
 
     // Print info
     std::printf("New scale factor: %0.3f\n", scaleFactor);
-    std::printf("New Spaceship Scale: (%.9f, %.9f, %.9f)\n", spaceship_scale.x, spaceship_scale.y, spaceship_scale.z);
+    //std::printf("New Spaceship Scale: (%.9f, %.9f, %.9f)\n", spaceship_scale.x, spaceship_scale.y, spaceship_scale.z);
     std::printf("New Terrain Scale: (%.2f, %.2f, %.2f)\n", terrainStart_scale.x, terrainStart_scale.y, terrainStart_scale.z);
 }
 
