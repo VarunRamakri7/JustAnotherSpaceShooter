@@ -13,8 +13,8 @@
 #include "LoadTexture.h"
 
 // Default window dimensions
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1296
+#define HEIGHT 1024
 
 // Mesh related data
 MeshData spaceship_mesh;
@@ -117,21 +117,25 @@ void display(GLFWwindow* window)
     glUseProgram(spaceship_shader);
     glUseProgram(terrain_shader);
 
-    int projection_loc = glGetUniformLocation(spaceship_shader, "projection");
-    glUniformMatrix4fv(projection_loc, 1, false, glm::value_ptr(projection));
-    
-    int view_loc = glGetUniformLocation(spaceship_shader, "view");
-    glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
-    
+    // Send uniforms to Spaceship shader
+    int s_projection_loc = glGetUniformLocation(spaceship_shader, "s_projection");
+    glUniformMatrix4fv(s_projection_loc, 1, false, glm::value_ptr(projection));
+    int s_view_loc = glGetUniformLocation(spaceship_shader, "s_view");
+    glUniformMatrix4fv(s_view_loc, 1, false, glm::value_ptr(view));
     int spaceship_loc = glGetUniformLocation(spaceship_shader, "spaceship");
     glUniformMatrix4fv(spaceship_loc, 1, false, glm::value_ptr(spaceship_matrix));
-
+    
+    // Send uniforms to terrain shader
+    int t_projection_loc = glGetUniformLocation(terrain_shader, "t_projection");
+    glUniformMatrix4fv(t_projection_loc, 1, false, glm::value_ptr(projection));
+    int t_view_loc = glGetUniformLocation(terrain_shader, "t_view");
+    glUniformMatrix4fv(t_view_loc, 1, false, glm::value_ptr(view));
     int terrainStart_loc = glGetUniformLocation(terrain_shader, "terrainStart");
     glUniformMatrix4fv(terrainStart_loc, 1, false, glm::value_ptr(terrainStart_matrix));
 
+    // Bind VAOs
     glBindVertexArray(spaceship_mesh.mVao);
     glDrawElements(GL_TRIANGLES, spaceship_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
-
     glBindVertexArray(terrainStart_mesh.mVao);
     glDrawElements(GL_TRIANGLES, terrainStart_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
 }
