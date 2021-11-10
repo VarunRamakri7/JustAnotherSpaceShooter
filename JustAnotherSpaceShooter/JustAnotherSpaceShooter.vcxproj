@@ -152,6 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\glad.c" />
+    <ClCompile Include="include\imgui-1.85\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="include\imgui-1.85\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="include\imgui-1.85\imgui.cpp" />
+    <ClCompile Include="include\imgui-1.85\imgui_demo.cpp" />
+    <ClCompile Include="include\imgui-1.85\imgui_draw.cpp" />
+    <ClCompile Include="include\imgui-1.85\imgui_tables.cpp" />
+    <ClCompile Include="include\imgui-1.85\imgui_widgets.cpp" />
     <ClCompile Include="src\InitShader.cpp" />
     <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
     <ClCompile Include="src\LoadMesh.cpp" />
