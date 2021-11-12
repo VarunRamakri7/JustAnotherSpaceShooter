@@ -15,7 +15,8 @@
 #include "LoadMesh.h"
 #include "LoadTexture.h"
 
-struct Color {
+struct Color
+{
     glm::vec3 Ka, La;
     glm::vec3 Kd, Ld;
     glm::vec3 Ks, Ls;
@@ -69,7 +70,7 @@ glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // Terrain related data
 glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.5f, 5.0f);
-glm::vec3 terrainStart_scale = glm::vec3(3.0f);
+glm::vec3 terrainStart_scale = glm::vec3(1.0f);
 glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void init_game()
@@ -151,9 +152,6 @@ void draw_gui(GLFWwindow* window)
 
 void display(GLFWwindow* window)
 {
-    // Set draw mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     // Setup Orthographic view
     glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
     glm::mat4 view = glm::lookAt(camera_pos, camLookAt, camera_up);
@@ -168,7 +166,7 @@ void display(GLFWwindow* window)
     // Terrain Matrices
     glm::mat4 terrainStart_matrix = glm::mat4(1.0f);
     terrainStart_matrix = glm::translate(terrainStart_matrix, terrainStart_pos);
-    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor * scaleFactor);
+    terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor /** scaleFactor*/);
     terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
 
     {
@@ -394,14 +392,14 @@ int main(void)
     glfwWindowHint(GLFW_SAMPLES, 16);
 
     const char *window_name = "Just Another Space Shooter";
-    // GLFWwindow *window = glfwCreateWindow(window_dims.x, window_dims.y, window_name, NULL, NULL);
-    GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
+    GLFWwindow *window = glfwCreateWindow(window_dims.x, window_dims.y, window_name, NULL, NULL);
+   /*GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode *mode = glfwGetVideoMode(primary_monitor);
     glfwWindowHint(GLFW_RED_BITS, mode->redBits);
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-    GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "My Title", primary_monitor, NULL);
+    GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "My Title", primary_monitor, NULL);*/
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
