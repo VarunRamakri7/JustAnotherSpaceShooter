@@ -60,7 +60,7 @@ float lastFrame = 0.0f;
 
 // World Related data
 const glm::vec3 origin = glm::vec3(0.0f);
-float moveFactor = 50.0f;
+float moveFactor = 5.0f;
 float scaleFactor = 1.0f;
 
 // Spaceship related
@@ -234,6 +234,11 @@ void display(GLFWwindow* window)
 
 void idle()
 {
+    float currentTime = deltaTime;
+
+    // Move camera and plane
+    spaceship_pos.z += (0.1f * deltaTime);
+    camera_pos.z += (0.1f * deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -272,6 +277,7 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
         case 'w':
         case 'W':
             spaceship_pos.z += (moveFactor * deltaTime);
+            camera_pos.z += (moveFactor * deltaTime);
             ///terrainStart_pos.y += (moveFactor * deltaTime);
             break;
 
@@ -279,6 +285,7 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
         case 's':
         case 'S':
             spaceship_pos.z -= (moveFactor * deltaTime);
+            camera_pos.z -= (moveFactor * deltaTime);
             //terrainStart_pos.y -= (moveFactor * deltaTime);
             break;
 
@@ -429,6 +436,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0, 0, 0, 1.0f);
 
+        idle();
         display(window);
 
         glfwSwapBuffers(window);
