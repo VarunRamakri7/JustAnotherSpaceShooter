@@ -26,13 +26,14 @@ glm::vec3 light_direction_1;
 #define HEIGHT 768
 
 // Mesh related data
-MeshData spaceship_mesh;
-MeshData terrainStart_mesh;
-GLuint spaceship_shader = -1;
-GLuint terrain_shader = -1;
-GLuint instanced_model_shader = -1;
+//MeshData spaceship_mesh;
+//MeshData terrainStart_mesh;
+//GLuint spaceship_shader = -1;
+//GLuint terrain_shader = -1;
 
+GLuint instanced_model_shader = -1;
 InstancedModel im_1;
+InstancedModel im_2;
 
 // Window related data
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
@@ -75,6 +76,7 @@ void init_game()
         std::string shader_folder = "shaders\\";
 
         // Spaceship Shader
+        /*
         std::string spaceship_vs_fname = shader_folder + "spaceship_vs.glsl";
         std::string spaceship_fs_fname = shader_folder + "spaceship_fs.glsl";
         spaceship_shader = InitShader(spaceship_vs_fname.c_str(), spaceship_fs_fname.c_str());
@@ -83,6 +85,7 @@ void init_game()
         std::string terrain_vs_fname = shader_folder + "terrain_vs.glsl";
         std::string terrain_fs_fname = shader_folder + "terrain_fs.glsl";
         terrain_shader = InitShader(terrain_vs_fname.c_str(), terrain_fs_fname.c_str());
+        */
 
         // Model Shader (Testing)
         std::string model_vs_fname = shader_folder + "instanced_model_vs.glsl";
@@ -114,6 +117,7 @@ void init_game()
         std::string model_folder = "data\\models\\";
         
         // Get spaceship
+        /*
         std::string spaceship_fname = model_folder + "spaceship_main.obj";
         spaceship_mesh = LoadMesh(spaceship_fname);
         std::cout << "Spaceship Scale Factor: " << spaceship_mesh.mScaleFactor << std::endl;
@@ -122,14 +126,23 @@ void init_game()
         std::string terrainStart_fname = model_folder + "terrain_start.obj";
         terrainStart_mesh = LoadMesh(terrainStart_fname);
         std::cout << "Terrain Scale Factor: " << terrainStart_mesh.mScaleFactor << std::endl;
+        */
 
         // spaceship_model
-        std::string tmp_fname = model_folder + "spaceship_main.model";
-        im_1.init(tmp_fname, instanced_model_shader);
+        std::string tmp_fname_1 = model_folder + "spaceship_test.model";
+        im_1.init(tmp_fname_1, instanced_model_shader);
         im_1.add(glm::vec3(0, 0, 0), spaceship_color);
         im_1.add(glm::vec3(2, 0, 0), terrain_color);
         im_1.add(glm::vec3(-2, 0, 0), spaceship_color);
         im_1.add(glm::vec3(-4, 0, 0), terrain_color);
+
+        // terrain_model
+        std::string tmp_fname_2 = model_folder + "terrain_start_test.model";
+        im_2.init(tmp_fname_2, instanced_model_shader);
+        im_2.add(glm::vec3(0, -2, 0), spaceship_color);
+        im_2.add(glm::vec3(2, -2, 0), terrain_color);
+        im_2.add(glm::vec3(-2, -2, 0), spaceship_color);
+        im_2.add(glm::vec3(-4, -2, 0), terrain_color);
     }
 
     /* Texture initialization */
@@ -172,9 +185,10 @@ void display(GLFWwindow *window)
     glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 100.0f);
 
     // Spaceship matrix
+    /*
     glm::mat4 spaceship_matrix = glm::mat4(1.0f);
     spaceship_matrix = glm::translate(spaceship_matrix, spaceship_pos);
-    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale * spaceship_mesh.mScaleFactor /** scaleFactor*/);
+    spaceship_matrix = glm::scale(spaceship_matrix, spaceship_scale * spaceship_mesh.mScaleFactor
     spaceship_matrix = glm::rotate(spaceship_matrix, glm::radians(0.0f), spaceship_rot);
 
     // Terrain Matrices
@@ -182,6 +196,7 @@ void display(GLFWwindow *window)
     terrainStart_matrix = glm::translate(terrainStart_matrix, terrainStart_pos);
     terrainStart_matrix = glm::scale(terrainStart_matrix, terrainStart_scale * terrainStart_mesh.mScaleFactor * scaleFactor);
     terrainStart_matrix = glm::rotate(terrainStart_matrix, glm::radians(0.0f), terrainStart_rot);
+    */
 
     // TMP Matrix
     // glm::mat4 model_matrix = glm::mat4(1.0f);
@@ -221,6 +236,7 @@ void display(GLFWwindow *window)
     }
 
     {
+        /*
         glUseProgram(terrain_shader);
         int t_projection_loc = glGetUniformLocation(terrain_shader, "t_projection");
         int t_view_loc = glGetUniformLocation(terrain_shader, "t_view");
@@ -248,6 +264,7 @@ void display(GLFWwindow *window)
         glUniform1f(shininess_loc, terrain_color.shininess);
         glBindVertexArray(terrainStart_mesh.mVao);
         glDrawElements(GL_TRIANGLES, terrainStart_mesh.mSubmesh[0].mNumIndices, GL_UNSIGNED_INT, 0);
+        */
     }
 
     {
@@ -261,6 +278,7 @@ void display(GLFWwindow *window)
         glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
         glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
         im_1.draw();
+        im_2.draw();
     }
 
     draw_gui(window);
