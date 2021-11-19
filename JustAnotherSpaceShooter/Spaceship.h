@@ -6,7 +6,7 @@ class Spaceship
 {
     public:
         Spaceship();
-        Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::vec3 nScale, float health);
+        Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::vec3 nScale, float nHealth, float nSpeed, unsigned int nAmmo);
         ~Spaceship();
 
         // TODO: Add collision check
@@ -30,12 +30,13 @@ class Spaceship
         float GetHealth();
         void SetSpeed(float nSpeed);
         float GetSpeed();
-        void SetAmmo(int nAmmo);
-        int GetAmmo();
+        void SetAmmo(unsigned int nAmmo);
+        unsigned int GetAmmo();
 
     private:
         bool isPlayer; // "True" if player, "false" if enemy
         int shipID;
+        // GLuint spaceship_shader = -1;
 
         // MeshData mesh;
         glm::vec3 pos; // Position of ship
@@ -45,5 +46,5 @@ class Spaceship
         // Power related
         float health;
         float speed;
-        int ammo;
+        unsigned int ammo;
 };

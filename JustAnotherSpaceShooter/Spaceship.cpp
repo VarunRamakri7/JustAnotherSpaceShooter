@@ -14,9 +14,11 @@ Spaceship::Spaceship()
 	scale = glm::vec3(1.0f);
 
 	health = 100.0f;
+	speed = 0.5f;
+	ammo = 20;
 }
 
-Spaceship::Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::vec3 nScale, float health)
+Spaceship::Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::vec3 nScale, float nHealth, float nSpeed, unsigned int nAmmo)
 {
 	isPlayer = status;
 	shipID = id;
@@ -25,7 +27,9 @@ Spaceship::Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::v
 	rot = nRot;
 	scale = nScale;
 
-	health = health;
+	health = nHealth;
+	speed = nSpeed;
+	ammo = nAmmo;
 }
 
 
@@ -141,12 +145,12 @@ float Spaceship::GetSpeed()
 }
 
 
-void Spaceship::SetAmmo(int nAmmo)
+void Spaceship::SetAmmo(unsigned int nAmmo)
 {
 	ammo = nAmmo;
 }
 
-int Spaceship::GetAmmo()
+unsigned int Spaceship::GetAmmo()
 {
 	return ammo;
 }
