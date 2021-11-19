@@ -67,6 +67,7 @@ float scaleFactor = 1.0f;
 glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 5.0f);
 glm::vec3 spaceship_scale = glm::vec3(1.0f);
 glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+float flightSpeed = 0.5f;
 
 // Terrain related data
 glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.5f, 5.0f);
@@ -140,10 +141,10 @@ void draw_gui(GLFWwindow* window)
    ImGui::NewFrame();
 
    ImGui::Begin("Debug Game");
-   ImGui::SetWindowFontScale(1.5f);
-   ImGui::SetWindowSize(ImVec2(700, 350));
-   {
-   }
+       ImGui::SetWindowFontScale(1.5f);
+       ImGui::SetWindowSize(ImVec2(700, 350));
+       {
+       }
    ImGui::End();
 
    ImGui::Render();
@@ -237,8 +238,8 @@ void idle()
     float currentTime = deltaTime;
 
     // Move camera and plane
-    spaceship_pos.z += (0.1f * deltaTime);
-    camera_pos.z += (0.1f * deltaTime);
+    spaceship_pos.z += (flightSpeed * deltaTime);
+    camera_pos.z += (flightSpeed * deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -293,12 +294,14 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
         case 'a':
         case 'A':
             spaceship_pos.x += (moveFactor * deltaTime);
+            //spaceship_pos.x = glm::min(XFREEDOM, spaceship_pos.x);
             break;
 
         // Move right
         case 'd':
         case 'D':
             spaceship_pos.x -= (moveFactor * deltaTime);
+            //spaceship_pos.x = glm::max(-XFREEDOM, spaceship_pos.x);
             break;
 
         case GLFW_KEY_ESCAPE:
