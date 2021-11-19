@@ -1,5 +1,9 @@
 #include "Spaceship.h"
 
+/**
+* Constructors and Destructor
+*/
+
 Spaceship::Spaceship()
 {
 	isPlayer = false;
@@ -27,8 +31,34 @@ Spaceship::Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::v
 
 Spaceship::~Spaceship()
 {
-	Spaceship();
+	isPlayer = false;
+	shipID = -1;
+
+	pos = glm::vec3(0.0f);
+	rot = glm::vec3(0.0f);
+	scale = glm::vec3(1.0f);
+
+	health = 0.0f;
 }
+
+/**
+* Power Related Functions
+*/
+
+// Kill ship if it loses health
+void Spaceship::KillShip()
+{
+	// Destroy ship
+	// TODO: Complete function
+	if (health < 0.5f)
+	{
+		Spaceship::~Spaceship();
+	}
+}
+
+/**
+* Setters and Getters are Below
+*/
 
 void Spaceship::SetPlayerStatus(bool status)
 {
@@ -98,4 +128,14 @@ void Spaceship::SetHealth(float nHealth)
 float Spaceship::GetHealth()
 {
 	return health;
+}
+
+void Spaceship::SetAmmo(int nAmmo)
+{
+	ammo = nAmmo;
+}
+
+int Spaceship::GetAmmo()
+{
+	return ammo;
 }

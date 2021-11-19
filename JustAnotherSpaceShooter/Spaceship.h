@@ -1,11 +1,17 @@
 #include <glm/glm.hpp>
 
+//#include "LoadMesh.h"
+
 class Spaceship
 {
     public:
         Spaceship();
         Spaceship(bool status, int id, glm::vec3 nPos, glm::vec3 nRot, glm::vec3 nScale, float health);
         ~Spaceship();
+
+        // TODO: Add collision check
+
+        void KillShip();
 
         // Getters and setter
         void SetPlayerStatus(bool status);
@@ -22,6 +28,8 @@ class Spaceship
 
         void SetHealth(float nHealth);
         float GetHealth();
+        void SetAmmo(int nAmmo);
+        int GetAmmo();
 
     private:
         bool isPlayer; // "True" if player, "false" if enemy
@@ -31,5 +39,8 @@ class Spaceship
         glm::vec3 pos; // Position of ship
         glm::vec3 rot; // Rotation of ship
         glm::vec3 scale; // Scale of ship
+
+        // Power related
         float health;
+        int ammo;
 };
