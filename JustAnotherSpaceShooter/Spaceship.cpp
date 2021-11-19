@@ -130,6 +130,17 @@ float Spaceship::GetHealth()
 	return health;
 }
 
+void Spaceship::SetSpeed(float nSpeed)
+{
+	speed = nSpeed;
+}
+
+float Spaceship::GetSpeed()
+{
+	return speed;
+}
+
+
 void Spaceship::SetAmmo(int nAmmo)
 {
 	ammo = nAmmo;

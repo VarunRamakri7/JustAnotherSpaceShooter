@@ -28,6 +28,8 @@ class Spaceship
 
         void SetHealth(float nHealth);
         float GetHealth();
+        void SetSpeed(float nSpeed);
+        float GetSpeed();
         void SetAmmo(int nAmmo);
         int GetAmmo();
 
@@ -42,5 +44,6 @@ class Spaceship
 
         // Power related
         float health;
+        float speed;
         int ammo;
 };
