@@ -28,8 +28,8 @@ glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
 // Default window dimensions
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1920
+#define HEIGHT 1080
 
 // Mesh related data
 MeshData spaceship_mesh;
@@ -235,7 +235,7 @@ void display(GLFWwindow* window)
 
 void idle()
 {
-    float currentTime = deltaTime;
+    //float currentTime = deltaTime;
 
     // Move camera and plane
     spaceship_pos.z += (flightSpeed * deltaTime);
@@ -421,7 +421,7 @@ int main(void)
     glfwSetWindowSizeCallback(window, resize);
     glEnable(GL_DEPTH_TEST);
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwMaximizeWindow(window);
+    //glfwMaximizeWindow(window);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
