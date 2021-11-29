@@ -28,14 +28,15 @@ glm::vec3 light_direction_1;
 GLuint instanced_model_shader = -1;
 InstancedModel im_1;
 InstancedModel im_2;
+InstancedModel im_3;
 
 // Window related data
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 // Camera related data
-glm::vec3 camera_pos   = glm::vec3(-4.92299f, 3.34283f, -2.61573f);
-glm::vec3 camera_front = glm::vec3(0.519728f, -0.67944f, 0.517922f);
+glm::vec3 camera_pos   = glm::vec3(-0.012f, -1.601f, -1.322f);
+glm::vec3 camera_front = glm::vec3(0.006f, -0.425f, 0.904f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 bool firstMouse = true;
@@ -50,8 +51,7 @@ float lastFrame = 0.0f;
 
 // World Related data
 const glm::vec3 origin = glm::vec3(0.0f);
-float moveFactor = 5.0f;
-float flightSpeed = 0.5f;
+float moveFactor = 100.0f;
 float scaleFactor = 1.0f;
 
 // Spaceship related
@@ -101,19 +101,28 @@ void init_game()
 
 		// spaceship_model
 		std::string tmp_fname_1 = model_folder + "spaceship_test.model";
-		im_1.init(tmp_fname_1, instanced_model_shader);
-		im_1.add(glm::vec3(0, 0, 0), spaceship_color);
-		im_1.add(glm::vec3(2, 0, 0), terrain_color);
-		im_1.add(glm::vec3(-2, 0, 0), spaceship_color);
-		im_1.add(glm::vec3(-4, 0, 0), terrain_color);
+		// im_1.init(tmp_fname_1, instanced_model_shader);
+		// im_1.add(glm::vec3(0, 0, 0), spaceship_color);
+		// im_1.add(glm::vec3(2, 0, 0), terrain_color);
+		// im_1.add(glm::vec3(-2, 0, 0), spaceship_color);
+		// im_1.add(glm::vec3(-4, 0, 0), terrain_color);
 
 		// terrain_model
 		std::string tmp_fname_2 = model_folder + "terrain_start_test.model";
-		im_2.init(tmp_fname_2, instanced_model_shader);
-		im_2.add(glm::vec3(0, -2, 0), spaceship_color);
-		im_2.add(glm::vec3(2, -2, 0), terrain_color);
-		im_2.add(glm::vec3(-2, -2, 0), spaceship_color);
-		im_2.add(glm::vec3(-4, -2, 0), terrain_color);
+		// im_2.init(tmp_fname_2, instanced_model_shader);
+		// im_2.add(glm::vec3(0, -2, 0), spaceship_color);
+		// im_2.add(glm::vec3(2, -2, 0), terrain_color);
+		// im_2.add(glm::vec3(-2, -2, 0), spaceship_color);
+		// im_2.add(glm::vec3(-4, -2, 0), terrain_color);
+
+		std::string texture_folder = "data\\textures\\";
+		std::string sparrow_filename = texture_folder + "test.png";
+		GLuint star_sparrow_id = LoadTexture(sparrow_filename);
+
+		std::string tmp_fname_3 = model_folder + "star-sparrow.model";
+		im_3.init(tmp_fname_3, instanced_model_shader, star_sparrow_id);
+		im_3.add(glm::vec3(0, -2, 0), spaceship_color);
+		im_3.add(glm::vec3(2, -2, 0), terrain_color);
 	}
 
 	/* Texture initialization */
@@ -161,8 +170,9 @@ void display(GLFWwindow *window)
 		glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
-		im_1.draw();
-		im_2.draw();
+		// im_1.draw();
+		// im_2.draw();
+		im_3.draw();
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -173,8 +183,6 @@ void display(GLFWwindow *window)
 
 void idle()
 {
-	im_1.move_position(0, glm::vec3(0, 0, deltaTime * flightSpeed));
-	camera_pos.z += deltaTime * flightSpeed;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -198,6 +206,7 @@ void processInput(GLFWwindow *window)
 		camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+	
 }
 
 
@@ -209,23 +218,32 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		switch (key)
 		{
+			// Move terrain up
 		case 'w':
 		case 'W':
-			im_1.move_position(0, glm::vec3(0, 0, moveFactor * deltaTime));
-			camera_pos.z += moveFactor * deltaTime;
+			im_3.move_position(0, glm::vec3(0, 0, moveFactor * deltaTime));
+			// std::cout << "delta: " << moveFactor * deltaTime << std::endl;
+			//spaceship_pos.z += (moveFactor * deltaTime);
+			///terrainStart_pos.y += (moveFactor * deltaTime);
 			break;
+
+			// Move terrain back
 		case 's':
 		case 'S':
-			im_1.move_position(0, glm::vec3(0, 0, -(moveFactor * deltaTime)));
-			camera_pos.z += -(moveFactor * deltaTime);
+			//spaceship_pos.z -= (moveFactor * deltaTime);
+			//terrainStart_pos.y -= (moveFactor * deltaTime);
 			break;
+
+			// Move left
 		case 'a':
 		case 'A':
-			im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
+			//spaceship_pos.x += (moveFactor * deltaTime);
 			break;
+
+			// Move right
 		case 'd':
 		case 'D':
-			im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
+			//spaceship_pos.x -= (moveFactor * deltaTime);
 			break;
 
 		case GLFW_KEY_ESCAPE:
@@ -359,7 +377,6 @@ int main(void)
 
 		processInput(window);
 
-		idle();
 		display(window);
 
 		glfwSwapBuffers(window);

@@ -4,6 +4,7 @@ out vec4 final_color;
 
 in vec3 var_pos_attrib;
 in vec3 var_normal_attrib;
+//in vec2 var_tex_coord_attrib;
 in mat4 var_model;
 in vec3 var_Ka;
 in vec3 var_Kd;
@@ -15,9 +16,12 @@ in float var_shininess;
 
 uniform vec3 light_direction;
 uniform vec3 view_position;
+//uniform sampler2D diffuse_tex;
 
 void main()
 {
+	// vec4 tex = texture(diffuse_tex, var_tex_coord_attrib);
+
 	vec3 ambient = var_Ka * var_La;
 
 	vec3 nw = normalize(vec3(var_model * vec4(var_normal_attrib, 0.0)));

@@ -17,6 +17,7 @@ struct Color {
 class InstancedModel
 {
     GLuint program_id;
+	//GLuint texture_id;
     GLuint vbo;
     GLuint vao;
     GLuint instanced_model_vbo;
@@ -43,7 +44,9 @@ class InstancedModel
     float *shininess;
 
     public:
+        // void init(std::string filename, GLuint program_id, GLuint texture_id);
         void init(std::string filename, GLuint program_id);
+        void move_position(int index, glm::vec3 delta);
         void draw();
         void add(glm::vec3 position, Color color);
 };

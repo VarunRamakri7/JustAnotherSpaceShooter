@@ -89,6 +89,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/include/imgui-1.85/backends;$(ProjectDir)/include/imgui-1.85/;$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,6 +107,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/include/imgui-1.85/backends;$(ProjectDir)/include/imgui-1.85/;$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,6 +125,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/include/imgui-1.85/backends;$(ProjectDir)/include/imgui-1.85/;$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +143,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/include/imgui-1.85/backends;$(ProjectDir)/include/imgui-1.85/;$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +163,7 @@
     <ClCompile Include="include\imgui-1.85\imgui_draw.cpp" />
     <ClCompile Include="include\imgui-1.85\imgui_tables.cpp" />
     <ClCompile Include="include\imgui-1.85\imgui_widgets.cpp" />
+    <ClCompile Include="include\stb_image.cpp" />
     <ClCompile Include="src\InitShader.cpp" />
     <ClCompile Include="src\InstancedModel.cpp" />
     <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
@@ -172,6 +177,8 @@
     <ClInclude Include="src\LoadTexture.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\instanced_model_fs.glsl" />
+    <None Include="shaders\instanced_model_vs.glsl" />
     <None Include="shaders\spaceship_fs.glsl" />
     <None Include="shaders\spaceship_vs.glsl" />
     <None Include="shaders\terrain_fs.glsl" />
