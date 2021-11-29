@@ -237,7 +237,7 @@ void idle()
 {
     //float currentTime = deltaTime;
 
-    // Move camera and plane
+    // Move camera and spaceship
     spaceship_pos.z += (flightSpeed * deltaTime);
     camera_pos.z += (flightSpeed * deltaTime);
 }
