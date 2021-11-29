@@ -1,3 +1,2 @@
 C:\Users\akash\Documents\GitHub\JustAnotherSpaceShooter\JustAnotherSpaceShooter\Debug\JustAnotherSpaceShooter.exe
 C:\Users\Varun\OneDrive - purdue.edu\College Stuff\Fall 2021\CGT 520\FinalProject\JustAnotherSpaceShooter\JustAnotherSpaceShooter\Debug\JustAnotherSpaceShooter.exe
-C:\Users\akash\Downloads\JustAnotherSpaceShooter-main\JustAnotherSpaceShooter-main\JustAnotherSpaceShooter\Debug\JustAnotherSpaceShooter.exe

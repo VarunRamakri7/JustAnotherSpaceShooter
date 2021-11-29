@@ -1,33 +1,34 @@
-#include "LoadTexture.h"
-#include "FreeImage.h"
+#include <glad/glad.h>
+#include <stb_image.h>
+#include <iostream>
+#include <string.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 
 GLuint LoadTexture(const std::string& fname)
 {
-   GLuint tex_id;
+	GLuint texture = 0;
 
-   FIBITMAP* tempImg = FreeImage_Load(FreeImage_GetFileType(fname.c_str(), 0), fname.c_str());
-   FIBITMAP* img = FreeImage_ConvertTo32Bits(tempImg);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int width, height, nrChannels;
+	unsigned char *data = stbi_load(fname.c_str(), &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture: " << fname << std::endl;
+	}
+	stbi_image_free(data);
 
-   FreeImage_Unload(tempImg);
-
-   GLuint w = FreeImage_GetWidth(img);
-   GLuint h = FreeImage_GetHeight(img);
-   GLuint scanW = FreeImage_GetPitch(img);
-
-   GLubyte* byteImg = new GLubyte[h*scanW];
-   FreeImage_ConvertToRawBits(byteImg, img, scanW, 32, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, FALSE);
-   FreeImage_Unload(img);
-
-   glGenTextures(1, &tex_id);
-   glBindTexture(GL_TEXTURE_2D, tex_id);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, byteImg);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-   delete byteImg;
-
-   return tex_id;
+	return texture;
 }
+

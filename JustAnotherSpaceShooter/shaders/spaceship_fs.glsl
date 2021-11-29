@@ -5,7 +5,7 @@ out vec4 final_color;
 in vec3 var_pos_attrib;
 in vec3 var_normal_attrib;
 
-uniform mat4 spaceship;
+uniform mat4 model;
 uniform vec3 light_direction;
 uniform vec3 view_position;
 uniform vec3 Ka;
@@ -20,8 +20,8 @@ void main()
 {
 	vec3 ambient = Ka * La;
 
-	vec3 nw = normalize(vec3(spaceship * vec4(var_normal_attrib, 0.0)));
-	vec3 pw = vec3(spaceship * vec4(var_pos_attrib, 1.0));
+	vec3 nw = normalize(vec3(model * vec4(var_normal_attrib, 0.0)));
+	vec3 pw = vec3(model * vec4(var_pos_attrib, 1.0));
 	vec3 lw = normalize(-light_direction);
 	float diff = max(dot(nw, lw), 0.0);
 	vec3 diffuse = Kd * Ld * diff;

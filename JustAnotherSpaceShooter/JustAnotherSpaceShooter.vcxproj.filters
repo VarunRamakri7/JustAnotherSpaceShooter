@@ -54,7 +54,10 @@
     <ClCompile Include="include\imgui-1.85\backends\imgui_impl_opengl3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Spaceship.cpp">
+    <ClCompile Include="src\InstancedModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,8 +71,8 @@
     <ClInclude Include="src\LoadTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Spaceship.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\InstancedModel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +86,12 @@
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\terrain_vs.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\instanced_model_fs.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\instanced_model_vs.glsl">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
