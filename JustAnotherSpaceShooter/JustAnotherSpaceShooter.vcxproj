@@ -169,12 +169,14 @@
     <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
     <ClCompile Include="src\LoadMesh.cpp" />
     <ClCompile Include="src\LoadTexture.cpp" />
+    <ClCompile Include="src\Spaceships.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InitShader.h" />
     <ClInclude Include="src\InstancedModel.h" />
     <ClInclude Include="src\LoadMesh.h" />
     <ClInclude Include="src\LoadTexture.h" />
+    <ClInclude Include="src\Spaceships.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\instanced_model_fs.glsl" />

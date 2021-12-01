@@ -15,6 +15,7 @@
 #include "LoadMesh.h"
 #include "LoadTexture.h"
 #include "InstancedModel.h"
+#include "Spaceships.h"
 
 Color terrain_color;
 Color spaceship_color;
@@ -24,6 +25,8 @@ glm::vec3 light_direction_1;
 // Default window dimensions
 #define WIDTH 1024
 #define HEIGHT 768
+
+Spaceships spaceships_test;
 
 GLuint instanced_model_shader = -1;
 InstancedModel im_1;
@@ -100,12 +103,14 @@ void init_game()
 		std::string model_folder = "data\\models\\";
 
 		// spaceship_model
+		/*
 		std::string tmp_fname_1 = model_folder + "spaceship_test.model";
 		im_1.init(tmp_fname_1, instanced_model_shader);
 		im_1.add(glm::vec3(0, 0, 0), spaceship_color);
 		im_1.add(glm::vec3(2, 0, 0), terrain_color);
 		im_1.add(glm::vec3(-2, 0, 0), spaceship_color);
 		im_1.add(glm::vec3(-4, 0, 0), terrain_color);
+		*/
 
 		// terrain_model
 		std::string tmp_fname_2 = model_folder + "terrain_start_test.model";
@@ -114,6 +119,10 @@ void init_game()
 		im_2.add(glm::vec3(2, -2, 0), terrain_color);
 		im_2.add(glm::vec3(-2, -2, 0), spaceship_color);
 		im_2.add(glm::vec3(-4, -2, 0), terrain_color);
+
+		std::string tmp_fname_1 = model_folder + "spaceship_test.model";
+		spaceships_test.init(tmp_fname_1, instanced_model_shader);
+		spaceships_test.add_new_spaceship(glm::vec3(0, 0, 0), spaceship_color);
 	}
 
 	/* Texture initialization */
@@ -161,8 +170,9 @@ void display(GLFWwindow *window)
 		glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
-		im_1.draw();
+		// im_1.draw();
 		im_2.draw();
+		spaceships_test.show();
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -173,7 +183,8 @@ void display(GLFWwindow *window)
 
 void idle()
 {
-	im_1.move_position(0, glm::vec3(0, 0, deltaTime * flightSpeed));
+	// im_1.move_position(0, glm::vec3(0, 0, deltaTime * flightSpeed));
+	spaceships_test.move(0, glm::vec3(0, 0, deltaTime * flightSpeed));
 	camera_pos.z += deltaTime * flightSpeed;
 }
 
@@ -188,7 +199,6 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	
 	float cameraSpeed = 1.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		camera_pos += cameraSpeed * camera_front;
@@ -211,21 +221,22 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 		case 'w':
 		case 'W':
-			im_1.move_position(0, glm::vec3(0, 0, moveFactor * deltaTime));
+			// im_1.move_position(0, glm::vec3(0, 0, moveFactor * deltaTime));
+			spaceships_test.move(0, glm::vec3(0, 0, moveFactor * deltaTime));
 			camera_pos.z += moveFactor * deltaTime;
 			break;
 		case 's':
 		case 'S':
-			im_1.move_position(0, glm::vec3(0, 0, -(moveFactor * deltaTime)));
+			// im_1.move_position(0, glm::vec3(0, 0, -(moveFactor * deltaTime)));
 			camera_pos.z += -(moveFactor * deltaTime);
 			break;
 		case 'a':
 		case 'A':
-			im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
+			//im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
 			break;
 		case 'd':
 		case 'D':
-			im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
+			//im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
 			break;
 
 		case GLFW_KEY_ESCAPE:
