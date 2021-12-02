@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[])
 {
-	std::string filename = "star-sparrow";
+	std::string filename = "spaceship_main";
 	std::string in_filename = filename + ".obj";
 	std::string out_filename = filename + ".model";
 

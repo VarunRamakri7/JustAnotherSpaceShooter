@@ -31,8 +31,6 @@ float* get_model_data_from_file(const char* filename, glm::vec3 *extreme_mins, g
 	fscanf(file, "%f", &extreme_mins->z);
 	fscanf(file, "%f", &extreme_maxs->z);
 
-	// std::cout << "num_floats: " << *num_floats << std::endl;
-
 	float *vertices = (float*)malloc(sizeof(float) * (*num_floats));
 	for(int i = 0; i < *num_floats; ++i)
 		fscanf(file, "%f", &vertices[i]);
@@ -49,9 +47,10 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	this->program_id = program_id;
 	// this->texture_id = texture_id;
 	this->current_length = 0;
-	this->num_vertices = (int) (num_floats / 6.0f); // @Note: 3 for position, 3 for normals
+	this->num_vertices = (int) (num_floats / 8.0f); // @Note: 3 for position, 3 for normals, 2 for texture_pos
 	this->models = (glm::mat4*)malloc(sizeof(glm::mat4) * MAX_INSTANCED_MODELS);
 	this->positions = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
+	this->scales = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->Ka = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->Kd = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->Ks = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
@@ -60,9 +59,8 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	this->Ls = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->shininess = (float*)malloc(sizeof(float) * MAX_INSTANCED_MODELS);
 
-	// std::cout << "num_floats_out: " << num_floats << std::endl;
-	// std::cout << "num_vertices: " << this->num_vertices << std::endl;
-
+	this->extreme_min = extreme_mins;
+	this->extreme_max = extreme_maxes;
 	glm::vec3 diff = extreme_maxes - extreme_mins;
 	float w = std::max(diff.x, std::max(diff.y, diff.z));
 	this->scale_factor = 1.0f / w;
@@ -71,6 +69,7 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	{
 		models[i] = glm::mat4(1.0f);
 		positions[i] = glm::vec3(0.0f);
+		scales[i] = glm::vec3(1.0f);
 		La[i] = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		Ld[i] = glm::vec3(0.614f, 0.041f, 0.041f);
 		Ls[i] = glm::vec3(0.727f, 0.626f, 0.626f);
@@ -79,16 +78,16 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 		Ks[i] = glm::vec3(1.0f);
 		shininess[i] = 32.0f;
 	}
-
+	
 	{
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vbo);
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * num_floats, floats, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
 		//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
 		//glEnableVertexAttribArray(2);
@@ -207,10 +206,39 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	std::cout << "Loaded model " << filename << " successfully " << std::endl;
 }
 
+glm::vec3 InstancedModel::get_front_pos(int index)
+{
+	glm::vec3 result = glm::vec3(0);
+
+	if (index >= current_length) {
+		std::cout << "get_front_pos: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		float mag = extreme_max.z;
+		glm::vec3 dir = glm::vec3(0, 0, 1);
+		result = mag * scale_factor * dir;
+	}
+
+	return result;
+}
+
+void InstancedModel::change_scale(int index, float factor)
+{
+	if (index >= current_length) {
+		std::cout << "change scale: index(" << index << ") <= current_length(" 
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		scales[index] *= factor;
+	}
+}
+
 void InstancedModel::move_position(int index, glm::vec3 delta)
 {
 	if (index >= current_length) {
-		std::cout << "index(" << index << ") <= current_length(" << current_length << ")" << std::endl;
+		std::cout << "move_position: index(" << index << ") <= current_length(" 
+			<< current_length << ")" << std::endl;
 	}
 	else {
 		positions[index] += delta;
@@ -240,14 +268,12 @@ void InstancedModel::draw()
 	// int tex_loc = glGetUniformLocation(program_id, "diffuse_tex");
 	// glUniform1i(tex_loc, 0);
 
-	glm::vec3 tmp_scale = glm::vec3(1, 1, 1);
 	glm::vec3 tmp_rotation_axis = glm::vec3(0, 0, 1);
 	for (int i = 0; i < current_length; ++i)
 	{
 		models[i] = glm::mat4(1.0f);
 		models[i] = glm::translate(models[i], positions[i]);
-		// std::cout << "positions[" << i << "]: " << positions[i].x << ", " << positions[i].y << ", " << positions[i].z << std::endl;
-		models[i] = glm::scale(models[i], tmp_scale * scale_factor);
+		models[i] = glm::scale(models[i], scales[i] * scale_factor);
 		models[i] = glm::rotate(models[i], glm::radians(0.0f), tmp_rotation_axis);
 	}
 

@@ -1,5 +1,0 @@
-#include "Spaceship.h"
-
-Spaceship::Spaceship(std::string model_filename, GLuint program_id) {
-
-}
