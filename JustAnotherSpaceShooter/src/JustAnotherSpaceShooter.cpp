@@ -23,8 +23,8 @@ glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
 // Default window dimensions
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1920
+#define HEIGHT 1080
 
 Spaceships spaceships_test;
 
@@ -178,9 +178,9 @@ void display(GLFWwindow *window)
 
 void idle()
 {
-	// im_1.move_position(0, glm::vec3(0, 0, deltaTime * flightSpeed));
-	// spaceships_test.move(0, glm::vec3(0, 0, deltaTime * flightSpeed));
-	// camera_pos.z += deltaTime * flightSpeed;
+	// Steadily move ship and camera
+	/*spaceships_test.move(0, glm::vec3(0, 0, moveFactor * deltaTime));
+	camera_pos.z += moveFactor * deltaTime;*/
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -232,6 +232,10 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 		case 'd':
 		case 'D':
 			//im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
+			break;
+
+		case GLFW_KEY_SPACE: // Shoot bullet
+			// TODO: Spawn and shoot bullet
 			break;
 
 		case GLFW_KEY_ESCAPE:
