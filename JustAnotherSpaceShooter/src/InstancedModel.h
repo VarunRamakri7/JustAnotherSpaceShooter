@@ -32,9 +32,12 @@ class InstancedModel
 
     GLuint num_vertices;
     float scale_factor;
+    glm::vec3 extreme_min;
+    glm::vec3 extreme_max;
 
     glm::mat4 *models;
     glm::vec3 *positions;
+    glm::vec3 *scales;
     glm::vec3 *Ka;
     glm::vec3 *Kd;
     glm::vec3 *Ks;
@@ -47,6 +50,8 @@ class InstancedModel
         // void init(std::string filename, GLuint program_id, GLuint texture_id);
         void init(std::string filename, GLuint program_id);
         void move_position(int index, glm::vec3 delta);
+        glm::vec3 get_front_pos(int index);
+        void change_scale(int index, float factor);
         void draw();
         void add(glm::vec3 position, Color color);
 };
