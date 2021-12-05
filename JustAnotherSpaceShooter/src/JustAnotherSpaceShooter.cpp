@@ -12,6 +12,8 @@
 #include <iostream>
 #include <ctime>
 
+// #include <SFML/Audio.hpp>
+
 #include "InitShader.h"
 #include "LoadMesh.h"
 #include "LoadTexture.h"
@@ -401,9 +403,9 @@ int main(void)
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
-		primary_monitor, NULL);
-	// GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
+	//GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
+	//	primary_monitor, NULL);
+	GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
 	
 	window_dims.x = mode->width;
 	window_dims.y = mode->height;
@@ -428,6 +430,11 @@ int main(void)
 	srand(unsigned int(time(NULL)));
 
 	init_game();
+
+	/* SFML Test */
+	// sf::SoundBuffer buffer;
+
+	/* SFML Test */
 
 	while (!glfwWindowShouldClose(window))
 	{

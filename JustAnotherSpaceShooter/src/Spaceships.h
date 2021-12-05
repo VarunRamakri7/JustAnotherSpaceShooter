@@ -18,6 +18,8 @@ public:
 	void move_position_by(int id, glm::vec3 delta);
 	unsigned int get_current_num_spaceships();
 	void rotate(int index, glm::vec3 axes, float degree);
+	glm::vec3 get_dims(int index);
+	glm::vec3 get_position(int index);
 };
 
 class Player {
@@ -39,6 +41,8 @@ public:
 	glm::vec3 get_front_position();
 	void show();
 	void move_position_by(glm::vec3 delta);
+	void check_for_collion_with_enemies(Spaceships* ss);
+
 };
 
 class Enemies {
@@ -60,4 +64,5 @@ public:
 	void show();
 	void change_scale_of_all(float enemy_scale_factor, float bullet_scale_factor);
 	void move_position_of_all_by(glm::vec3 delta);
+	void check_if_hit_player(Spaceships* ss);
 };

@@ -6,9 +6,19 @@ void Spaceships::init(std::string model_filename, GLuint program_id)
 	spaceship_im.init(model_filename, program_id);
 }
 
+glm::vec3 Spaceships::get_position(int index)
+{
+	return spaceship_im.get_position(index);
+}
+
 void Spaceships::add_new_spaceship(glm::vec3 position, Color color) 
 {
 	spaceship_im.add(position, color);
+}
+
+glm::vec3 Spaceships::get_dims(int index)
+{
+	return spaceship_im.get_dims(index);
 }
 
 void Spaceships::rotate(int index, glm::vec3 axes, float degree)
@@ -40,6 +50,23 @@ void Spaceships::move_position_by(int id, glm::vec3 delta)
 {
 	spaceship_im.move_position_by(id, delta);
 }
+
+void Player::check_for_collion_with_enemies(Spaceships* ss)
+{
+	for (unsigned int i = 0; i < bullets_shot; ++i)
+	{
+		glm::vec3 position = bullets.get_position(i);
+		glm::vec3 bullet_dims = bullets.get_dims(i);
+		for (unsigned int j = 0; j < ss->get_current_num_spaceships(); ++j)
+		{
+			glm::vec3 enemy_position = ss->get_position(j);
+			glm::vec3 enemy_dims = ss->get_dims(j);
+
+			/* Collision code */
+		}
+	}
+}
+
 
 void Player::update()
 {
@@ -138,6 +165,24 @@ void Enemies::add(glm::vec3 position, Color color)
 		bullets_shot[index] = 0;
 	}
 }
+
+void Enemies::check_if_hit_player(Spaceships* player_ss)
+{
+	glm::vec3 player_position = player_ss->get_position(0);
+	glm::vec3 player_dims = player_ss->get_dims(0);
+
+	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
+	{
+		for (unsigned int j = 0; j < bullets_shot[i]; ++j)
+		{
+			glm::vec3 current_bullet_position = bullets[i].get_position(j);
+			glm::vec3 bullet_dims = bullets[i].get_dims(j);
+
+			/* Collision code */
+		}
+	}
+}
+
 
 void Enemies::shoot_bullets()
 {
