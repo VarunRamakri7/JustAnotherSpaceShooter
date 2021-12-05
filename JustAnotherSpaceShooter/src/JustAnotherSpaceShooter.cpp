@@ -27,8 +27,8 @@ glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
 // Default window dimensions
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1920
+#define HEIGHT 1080
 
 // Spaceships spaceships_test;
 Player main_player;
@@ -254,9 +254,15 @@ void display(GLFWwindow *window)
 
 void idle()
 {
+<<<<<<< HEAD
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;
+=======
+	// Steadily move ship and camera
+	/*spaceships_test.move(0, glm::vec3(0, 0, moveFactor * deltaTime));
+	camera_pos.z += moveFactor * deltaTime;*/
+>>>>>>> dc38cbffa88ba8bab39207c350ed3c10ce20ead3
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -305,6 +311,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		switch (key)
 		{
+<<<<<<< HEAD
 		case 32: // Space
 			main_player.shoot_bullet();
 			break;
