@@ -44,7 +44,6 @@ public:
 	void show();
 	void move_position_by(glm::vec3 delta);
 	void check_for_collion_with_enemies(Spaceships* ss);
-
 };
 
 class Enemies {

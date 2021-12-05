@@ -78,8 +78,8 @@ void Player::check_for_collion_with_enemies(Spaceships* ss)
 			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
 			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
 
-			// Iterate through all the enemies
-			for (unsigned int j = 0; j < ss->get_current_num_spaceships(); ++j)
+			// Iterate through all the ships except the player (index 0)
+			for (unsigned int j = 1; j < ss->get_current_num_spaceships(); ++j)
 			{
 				// Check if enemy has collision active
 				if (ss->GetCollisionStatus())
@@ -117,6 +117,9 @@ void Player::update()
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
 		bullets.move_position_by(i, glm::vec3(0, 0, bullet_speed));
+
+		// Check collision
+		check_for_collion_with_enemies(&this->ss);
 	}
 }
 
@@ -247,7 +250,7 @@ void Enemies::check_if_hit_player(Spaceships* player_ss)
 					if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, enemy_min_dims, enemy_max_dims))
 					{
 						// Collision occurs
-						std::cout << "Collision between bullet " << i << " and player " << j << std::endl;
+						std::cout << "Collision between bullet " << i << " and player " << std::endl;
 
 						// Disable collision for bullet
 						bullets[i].SetCollisionStatus(false);
@@ -285,6 +288,9 @@ void Enemies::update()
 			bullets[i].move_position_by(j, glm::vec3(0, 0, bullet_speed));
 		}
 	}
+
+	// Check collision with player
+	check_if_hit_player(&this->ss);
 }
 
 void Enemies::move_position_of_all_by(glm::vec3 delta)
