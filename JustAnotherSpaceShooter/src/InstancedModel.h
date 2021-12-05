@@ -34,6 +34,7 @@ class InstancedModel
     float scale_factor;
     glm::vec3 extreme_min;
     glm::vec3 extreme_max;
+    bool canCollide;
 
     bool* should_hide; /* @Akash: Do not use this for now. */
 
@@ -65,4 +66,6 @@ class InstancedModel
         void add(glm::vec3 position, Color color);
         glm::vec3 get_dims(int index);
         unsigned int get_current_length();
+        void SetCollisionStatus(bool status);
+        bool GetCollisionStatus();
 };

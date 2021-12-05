@@ -120,6 +120,8 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	float w = std::max(diff.x, std::max(diff.y, diff.z));
 	this->scale_factor = 1.0f / w;
 
+	this->canCollide = true;
+
 	// std::cout << "filename: " << filename << ", scale_factor: " << this->scale_factor << std::endl;
 
 	for(unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
@@ -416,4 +418,14 @@ void InstancedModel::draw()
 	// glBindTexture(GL_TEXTURE_2D, texture_id);
 	glBindVertexArray(vao);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, num_vertices, current_length);
+}
+
+void InstancedModel::SetCollisionStatus(bool status)
+{
+	this->canCollide = status;
+}
+
+bool InstancedModel::GetCollisionStatus()
+{
+	return this->canCollide;
 }
