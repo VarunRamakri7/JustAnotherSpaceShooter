@@ -10,6 +10,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
+#include <ctime>
 
 #include "InitShader.h"
 #include "LoadMesh.h"
@@ -17,8 +18,11 @@
 #include "InstancedModel.h"
 #include "Spaceships.h"
 
-Color terrain_color;
+Color terrain_color_1;
+Color bullet_color_1;
+Color bullet_color_2;
 Color spaceship_color;
+Color enemies_color_1;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
@@ -26,19 +30,23 @@ glm::vec3 light_direction_1;
 #define WIDTH 1024
 #define HEIGHT 768
 
-Spaceships spaceships_test;
+// Spaceships spaceships_test;
+Player main_player;
+Enemies enemies;
 
 GLuint instanced_model_shader = -1;
-InstancedModel im_terrain;
-InstancedModel im_bullet;
+InstancedModel im_terrain_start;
+InstancedModel im_terrain_mid;
+InstancedModel im_terrain_end;
+//InstancedModel im_bullet;
 
 // Window related data
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 // Camera related data
-glm::vec3 camera_pos   = glm::vec3(-4.92299f, 3.34283f, -2.61573f);
-glm::vec3 camera_front = glm::vec3(0.519728f, -0.67944f, 0.517922f);
+glm::vec3 camera_pos   = glm::vec3(0.00445641f, 0.254251f, -2.54383f);
+glm::vec3 camera_front = glm::vec3(0.0150221f, -0.292372f, 0.956187f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 bool firstMouse = true;
@@ -53,8 +61,9 @@ float lastFrame = 0.0f;
 
 // World Related data
 const glm::vec3 origin = glm::vec3(0.0f);
-float moveFactor = 5.0f;
-float flightSpeed = 0.5f;
+float moveFactor = 3.0f;
+float moveSideFactor = 0.2f;
+float flightSpeed = 0.1f;
 float scaleFactor = 1.0f;
 
 // Spaceship related
@@ -81,13 +90,37 @@ void init_game()
 
 	/* Colors initialization */
 	{
-		terrain_color.La = glm::vec3(0.2125f, 0.1275f, 0.054f);
-		terrain_color.Ld = glm::vec3(0.714f, 0.428f, 0.181f);
-		terrain_color.Ls = glm::vec3(0.393f, 0.271f, 0.166f);
-		terrain_color.Ka = glm::vec3(1.0f);
-		terrain_color.Kd = glm::vec3(1.0f);
-		terrain_color.Ks = glm::vec3(1.0f);
-		terrain_color.shininess = 32.0f;
+		terrain_color_1.La = glm::vec3(0.2125f, 0.1275f, 0.054f);
+		terrain_color_1.Ld = glm::vec3(0.714f, 0.428f, 0.181f);
+		terrain_color_1.Ls = glm::vec3(0.393f, 0.271f, 0.166f);
+		terrain_color_1.Ka = glm::vec3(1.0f);
+		terrain_color_1.Kd = glm::vec3(1.0f);
+		terrain_color_1.Ks = glm::vec3(1.0f);
+		terrain_color_1.shininess = 32.0f;
+
+		bullet_color_1.La = glm::vec3(0.135f, 0.2225f, 0.1575f);
+		bullet_color_1.Ld = glm::vec3(0.54f, 0.89f, 0.63f);
+		bullet_color_1.Ls = glm::vec3(0.316228f, 0.316228f, 0.316228f);
+		bullet_color_1.Ka = glm::vec3(1.0f);
+		bullet_color_1.Kd = glm::vec3(1.0f);
+		bullet_color_1.Ks = glm::vec3(1.0f);
+		bullet_color_1.shininess = 32.0f;
+
+		bullet_color_2.La = glm::vec3(0.8f, 0.8f, 0.8f);
+		bullet_color_2.Ld = glm::vec3(0.54f, 0.69f, 0.63f);
+		bullet_color_2.Ls = glm::vec3(0.716228f, 0.316228f, 0.716228f);
+		bullet_color_2.Ka = glm::vec3(1.0f);
+		bullet_color_2.Kd = glm::vec3(1.0f);
+		bullet_color_2.Ks = glm::vec3(1.0f);
+		bullet_color_2.shininess = 32.0f;
+
+		enemies_color_1.La = glm::vec3(0.0215f,	0.1745f,	0.0215f);
+		enemies_color_1.Ld = glm::vec3(0.07568f,	0.61424f,	0.07568f);
+		enemies_color_1.Ls = glm::vec3(0.633f,	0.727811f,	0.633f);
+		enemies_color_1.Ka = glm::vec3(1.0f);
+		enemies_color_1.Kd = glm::vec3(1.0f);
+		enemies_color_1.Ks = glm::vec3(1.0f);
+		enemies_color_1.shininess = 32.0f;
 
 		spaceship_color.La = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		spaceship_color.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
@@ -102,22 +135,62 @@ void init_game()
 	{
 		std::string model_folder = "data\\models\\";
 
-		// terrain_model
-		std::string tmp_fname_2 = model_folder + "terrain_start.model";
-		im_terrain.init(tmp_fname_2, instanced_model_shader);
-		im_terrain.add(glm::vec3(0, -2, 0), spaceship_color);
-		im_terrain.add(glm::vec3(2, -2, 0), terrain_color);
-		im_terrain.add(glm::vec3(-2, -2, 0), spaceship_color);
-		im_terrain.add(glm::vec3(-4, -2, 0), terrain_color);
+		float upscale_factor = 4.0f;
 
-		std::string tmp_fname_1 = model_folder + "spaceship_main.model";
-		spaceships_test.init(tmp_fname_1, instanced_model_shader);
-		spaceships_test.add_new_spaceship(glm::vec3(0, 0, 0), spaceship_color);
+		// Terrain
+		im_terrain_start.init(model_folder + "terrain_start.model", instanced_model_shader);
+		im_terrain_mid.init(model_folder + "terrain_mid.model", instanced_model_shader);
+		im_terrain_start.add(glm::vec3(0, 0, 0), terrain_color_1);
+		im_terrain_start.change_scale(0, upscale_factor);
+		im_terrain_start.rotate(0, glm::vec3(0, 1, 0), 180.0f);
 
-		std::string tmp_fname_3 = model_folder + "bullet.model";
-		im_bullet.init(tmp_fname_3, instanced_model_shader);
-		im_bullet.add(spaceships_test.get_front_pos(0), terrain_color);
-		im_bullet.change_scale(0, 0.25f * 0.5f);
+		glm::vec3 d1 = im_terrain_start.get_dims(0);
+		im_terrain_start.move_position_by(0, glm::vec3(0, 0, -d1.z / 2.0f * 1.2f));
+
+		glm::vec3 start_position = glm::vec3(0, 0, 0);
+		im_terrain_mid.add(start_position, terrain_color_1);
+		im_terrain_mid.change_scale(0, 0.3784f * upscale_factor);
+		im_terrain_mid.rotate(0, glm::vec3(0, 1, 0), 0);
+		float terrain_mid_depth = im_terrain_mid.get_dims(0).z * 0.95f;
+		for (int i = 1; i < 100; ++i) {
+			glm::vec3 position = glm::vec3(start_position.x, start_position.y, i * terrain_mid_depth);
+			im_terrain_mid.add(position, terrain_color_1);
+			im_terrain_mid.change_scale(i, 0.3784f * upscale_factor);
+			if(i % 2 != 0)
+				im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 180);
+			else
+				im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 0);
+		}
+
+		im_terrain_end.init(model_folder + "terrain_end.model", instanced_model_shader);
+		im_terrain_end.add(glm::vec3(0, 0, 0), terrain_color_1);
+		im_terrain_end.change_scale(0, 0.3784f * upscale_factor);
+		glm::vec3 d2 = im_terrain_mid.get_dims(99);
+		glm::vec3 last_mid_pos = im_terrain_mid.get_front_pos(99, false);
+		im_terrain_end.move_position_to(0, glm::vec3(0, 0, last_mid_pos.z + d2.z / 2.0f * 0.9f));
+		
+		// Player
+		main_player.init(instanced_model_shader, model_folder + "spaceship_main.model",
+			glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z), spaceship_color,
+			model_folder + "bullet.model", bullet_color_1);
+		main_player.change_scale(0.1f);
+
+		// Enemies
+		enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
+			         model_folder + "bullet.model", bullet_color_2);
+		enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
+			        enemies_color_1);
+		enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
+			        enemies_color_1);
+		enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
+			        enemies_color_1);
+		enemies.add(glm::vec3(+0.2f, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
+			enemies_color_1);
+		enemies.add(glm::vec3(-0.2f, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
+			enemies_color_1);
+		enemies.add(glm::vec3(0, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
+			enemies_color_1);
+		enemies.change_scale_of_all(0.1f, 0.025f);
 	}
 
 	/* Texture initialization */
@@ -153,7 +226,7 @@ void display(GLFWwindow *window)
 	glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
 	glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
 	// glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.01f, 100.0f);
-	glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 20.0f);
 
 	{
 		glUseProgram(instanced_model_shader);
@@ -165,9 +238,12 @@ void display(GLFWwindow *window)
 		glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
-		im_terrain.draw();
-		im_bullet.draw();
-		spaceships_test.show();
+		
+		im_terrain_start.draw();
+		im_terrain_mid.draw();
+		im_terrain_end.draw();
+		main_player.show();
+		enemies.show();
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -178,9 +254,9 @@ void display(GLFWwindow *window)
 
 void idle()
 {
-	// im_1.move_position(0, glm::vec3(0, 0, deltaTime * flightSpeed));
-	// spaceships_test.move(0, glm::vec3(0, 0, deltaTime * flightSpeed));
-	// camera_pos.z += deltaTime * flightSpeed;
+	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	camera_pos.z += deltaTime * moveFactor;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -194,7 +270,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	float cameraSpeed = 1.5f * deltaTime;
+	float cameraSpeed = 0.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		camera_pos += cameraSpeed * camera_front;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
@@ -203,44 +279,38 @@ void processInput(GLFWwindow *window)
 		camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
-}
 
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		main_player.move_position_by(glm::vec3(0, 0, moveFactor * deltaTime));
+		enemies.move_position_of_all_by(glm::vec3(0, 0, moveFactor * deltaTime));
+		camera_pos.z += moveFactor * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		main_player.move_position_by(glm::vec3(+moveSideFactor * deltaTime, 0, 0));
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		main_player.move_position_by(glm::vec3(-moveSideFactor * deltaTime, 0, 0));
+	}
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+		main_player.move_position_by(glm::vec3(0, 0.1f * deltaTime, 0));
+	}
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+		main_player.move_position_by(glm::vec3(0, -0.1f * deltaTime, 0));
+	}
+}
 
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//std::cout << "key : " << key << ", " << char(key) << ", scancode: " << scancode << ", action: " << action << ", mods: " << mods << std::endl;
-
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
 		switch (key)
 		{
-		case 'w':
-		case 'W':
-			// im_1.move_position(0, glm::vec3(0, 0, moveFactor * deltaTime));
-			spaceships_test.move(0, glm::vec3(0, 0, moveFactor * deltaTime));
-			camera_pos.z += moveFactor * deltaTime;
-			break;
-		case 's':
-		case 'S':
-			// im_1.move_position(0, glm::vec3(0, 0, -(moveFactor * deltaTime)));
-			camera_pos.z += -(moveFactor * deltaTime);
-			break;
-		case 'a':
-		case 'A':
-			//im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
-			break;
-		case 'd':
-		case 'D':
-			//im_1.move_position(0, glm::vec3(moveFactor * deltaTime, 0, 0));
-			break;
-
-		case GLFW_KEY_ESCAPE:
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		case 32: // Space
+			main_player.shoot_bullet();
 			break;
 		}
 	}
 }
-
 
 void mouse_cursor(GLFWwindow *window, double xpos, double ypos)
 {
@@ -325,13 +395,16 @@ int main(void)
 	glfwWindowHint(GLFW_SAMPLES, 16);
 
 	const char *window_name = "Just Another Space Shooter";
-	GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
+	GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode *mode = glfwGetVideoMode(primary_monitor);
 	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "My Title", primary_monitor, NULL);
+	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
+		primary_monitor, NULL);
+	// GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
+	
 	window_dims.x = mode->width;
 	window_dims.y = mode->height;
 
@@ -351,6 +424,8 @@ int main(void)
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 150");
+
+	srand(unsigned int(time(NULL)));
 
 	init_game();
 

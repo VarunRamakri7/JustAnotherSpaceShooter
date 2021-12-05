@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 float* get_model_data_from_file(const char* filename, glm::vec3 *extreme_mins, glm::vec3 *extreme_maxs, 
-		int *num_floats) {
+								int *num_floats) {
 	FILE *file = NULL;
 	file = fopen(filename, "r");
 	if(file == NULL) {
@@ -38,6 +38,58 @@ float* get_model_data_from_file(const char* filename, glm::vec3 *extreme_mins, g
 	return vertices;
 }
 
+float InstancedModel::get_scale_factor()
+{
+	return scale_factor;
+}
+
+void InstancedModel::move_position_to(int index, glm::vec3 new_position)
+{
+	if (index >= current_length) {
+		std::cout << "move_position_to: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		positions[index] = new_position;
+	}
+}
+
+unsigned int InstancedModel::get_current_length()
+{
+	return current_length;
+}
+
+glm::vec3 InstancedModel::get_position(int index)
+{
+	glm::vec3 result = glm::vec3(0);
+
+	if (index >= current_length) {
+		std::cout << "get_dims: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		result = positions[index];
+	}
+
+	return result;
+}
+
+glm::vec3 InstancedModel::get_dims(int index)
+{
+	glm::vec3 result = glm::vec3(0);
+
+	if (index >= current_length) {
+		std::cout << "get_dims: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		glm::vec3 dims = extreme_max - extreme_min;
+		result = dims * scales[index] * scale_factor;
+	}
+
+	return result;
+}
+
 void InstancedModel::init(std::string filename, GLuint program_id)
 {
 	glm::vec3 extreme_mins, extreme_maxes;
@@ -51,6 +103,9 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	this->models = (glm::mat4*)malloc(sizeof(glm::mat4) * MAX_INSTANCED_MODELS);
 	this->positions = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->scales = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
+	this->rotation_axes = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
+	this->angles = (float*)malloc(sizeof(float) * MAX_INSTANCED_MODELS);
+	this->should_hide = (bool*)malloc(sizeof(bool) * MAX_INSTANCED_MODELS);
 	this->Ka = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->Kd = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
 	this->Ks = (glm::vec3*)malloc(sizeof(glm::vec3) * MAX_INSTANCED_MODELS);
@@ -65,11 +120,15 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	float w = std::max(diff.x, std::max(diff.y, diff.z));
 	this->scale_factor = 1.0f / w;
 
+	// std::cout << "filename: " << filename << ", scale_factor: " << this->scale_factor << std::endl;
+
 	for(unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
 	{
 		models[i] = glm::mat4(1.0f);
 		positions[i] = glm::vec3(0.0f);
 		scales[i] = glm::vec3(1.0f);
+		rotation_axes[i] = glm::vec3(0, 1, 0);
+		should_hide[i] = false;
 		La[i] = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		Ld[i] = glm::vec3(0.614f, 0.041f, 0.041f);
 		Ls[i] = glm::vec3(0.727f, 0.626f, 0.626f);
@@ -77,6 +136,7 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 		Kd[i] = glm::vec3(1.0f);
 		Ks[i] = glm::vec3(1.0f);
 		shininess[i] = 32.0f;
+		angles[i] = 0;
 	}
 	
 	{
@@ -203,10 +263,10 @@ void InstancedModel::init(std::string filename, GLuint program_id)
 	}
 
 	free(floats);
-	std::cout << "Loaded model " << filename << " successfully " << std::endl;
+	// std::cout << "Loaded model " << filename << " successfully " << std::endl;
 }
 
-glm::vec3 InstancedModel::get_front_pos(int index)
+glm::vec3 InstancedModel::get_front_pos(int index, bool flip_on_y_180)
 {
 	glm::vec3 result = glm::vec3(0);
 
@@ -215,9 +275,12 @@ glm::vec3 InstancedModel::get_front_pos(int index)
 			<< current_length << ")" << std::endl;
 	}
 	else {
-		float mag = extreme_max.z;
-		glm::vec3 dir = glm::vec3(0, 0, 1);
-		result = mag * scale_factor * dir;
+		glm::vec3 dir = glm::vec3(0, 0, 1); /* @Note: Needs to be changed. */
+		result = positions[index];
+		if(flip_on_y_180)
+			result.z -= extreme_max.z * scales[index].z * scale_factor;
+		else
+			result.z += extreme_max.z * scales[index].z * scale_factor;
 	}
 
 	return result;
@@ -234,7 +297,20 @@ void InstancedModel::change_scale(int index, float factor)
 	}
 }
 
-void InstancedModel::move_position(int index, glm::vec3 delta)
+void InstancedModel::change_scale(int index, glm::vec3 factor)
+{
+	if (index >= current_length) {
+		std::cout << "change scale: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		scales[index].x *= factor.x;
+		scales[index].y *= factor.y;
+		scales[index].z *= factor.z;
+	}
+}
+
+void InstancedModel::move_position_by(int index, glm::vec3 delta)
 {
 	if (index >= current_length) {
 		std::cout << "move_position: index(" << index << ") <= current_length(" 
@@ -259,6 +335,18 @@ void InstancedModel::add(glm::vec3 position, Color color)
 	current_length += 1;
 }
 
+void InstancedModel::rotate(int index, glm::vec3 axes, float degree)
+{
+	if (index >= current_length) {
+		std::cout << "move_position: index(" << index << ") <= current_length("
+			<< current_length << ")" << std::endl;
+	}
+	else {
+		rotation_axes[index] = axes;
+		angles[index] = degree;
+	}
+}
+
 void InstancedModel::draw()
 {
 	glUseProgram(program_id);
@@ -274,7 +362,7 @@ void InstancedModel::draw()
 		models[i] = glm::mat4(1.0f);
 		models[i] = glm::translate(models[i], positions[i]);
 		models[i] = glm::scale(models[i], scales[i] * scale_factor);
-		models[i] = glm::rotate(models[i], glm::radians(0.0f), tmp_rotation_axis);
+		models[i] = glm::rotate(models[i], glm::radians(angles[i]), rotation_axes[i]);
 	}
 
 	/* Updating ModelVBO */
