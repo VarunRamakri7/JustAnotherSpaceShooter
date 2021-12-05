@@ -28,7 +28,7 @@ class Player {
 private:
 	InstancedModel bullets;
 	Spaceships ss;
-	const unsigned int total_ammo = 200; /* @Note: This should be below MAX_INSTANCED_MODELS */
+	const unsigned int total_ammo = 50; /* @Note: This should be below MAX_INSTANCED_MODELS */
 	unsigned int bullets_shot;
 	float bullet_speed;
 	Color bullet_color;
@@ -52,7 +52,7 @@ private:
 	Spaceships ss;
 	InstancedModel* bullets; /* @Note: Size is the MAX_INSTANCED_MODELS */
 	Color bullet_color;
-	const unsigned int total_ammo = 200; /* @Note: This should be below MAX_INSTANCED_MODELS */
+	const unsigned int total_ammo = 50; /* @Note: This should be below MAX_INSTANCED_MODELS */
 	float bullet_speed;
 	unsigned int *bullets_shot;
 

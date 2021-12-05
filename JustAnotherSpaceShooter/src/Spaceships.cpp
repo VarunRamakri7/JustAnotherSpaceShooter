@@ -98,6 +98,10 @@ void Player::check_for_collion_with_enemies(Spaceships* ss)
 						// Collision occurs
 						std::cout << "Collision between bullet " << i << " and enemy " << j << std::endl;
 
+						// Disable collision for bullet and enemy
+						bullets.SetCollisionStatus(false);
+						ss->SetCollisionStatus(false);
+
 						// Move bullet and enemy behind the camera
 						bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
 						ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, 50.0f)); // Move enemy
@@ -211,14 +215,49 @@ void Enemies::check_if_hit_player(Spaceships* player_ss)
 	glm::vec3 player_position = player_ss->get_position(0);
 	glm::vec3 player_dims = player_ss->get_dims(0);
 
+	// Iterate through all the enemies
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
+		// Iterate through all the bullets shot by the enemy
 		for (unsigned int j = 0; j < bullets_shot[i]; ++j)
 		{
-			glm::vec3 current_bullet_position = bullets[i].get_position(j);
-			glm::vec3 bullet_dims = bullets[i].get_dims(j);
+			// Get position and dimensions of a bullet
+			glm::vec3 bullet_position = bullets[i].get_position(i);
+			glm::vec3 bullet_dims = bullets[i].get_dims(i);
 
-			/* Collision code */
+			// Get extremeities of bullet
+			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
+			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
+
+			// Iterate through all the enemies
+			for (unsigned int j = 0; j < player_ss->get_current_num_spaceships(); ++j)
+			{
+				// Check if enemy has collision active
+				if (player_ss->GetCollisionStatus())
+				{
+					// Get position and dimensions of an enemy
+					glm::vec3 enemy_position = player_ss->get_position(j);
+					glm::vec3 enemy_dims = player_ss->get_dims(j);
+
+					// Get extremeities of enemy
+					glm::vec3 enemy_max_dims = enemy_position + (0.5f * enemy_dims);
+					glm::vec3 enemy_min_dims = enemy_position - (0.5f * enemy_dims);
+
+					// Check if bullet and enemy collide (using box-box intersection)
+					if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, enemy_min_dims, enemy_max_dims))
+					{
+						// Collision occurs
+						std::cout << "Collision between bullet " << i << " and player " << j << std::endl;
+
+						// Disable collision for bullet
+						bullets[i].SetCollisionStatus(false);
+
+						// Move bullet and enemy behind the camera
+						bullets[i].move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
+						// TODO: Reduce player health
+					}
+				}
+			}
 		}
 	}
 }
