@@ -20,6 +20,8 @@ public:
 	void rotate(int index, glm::vec3 axes, float degree);
 	glm::vec3 get_dims(int index);
 	glm::vec3 get_position(int index);
+	void SetCollisionStatus(bool status);
+	bool GetCollisionStatus();
 };
 
 class Player {
@@ -66,3 +68,5 @@ public:
 	void move_position_of_all_by(glm::vec3 delta);
 	void check_if_hit_player(Spaceships* ss);
 };
+
+bool BoxBoxIntersection(glm::vec3 objectMin, glm::vec3 objectMax, glm::vec3 colliderMin, glm::vec3 colliderMax);

@@ -51,22 +51,62 @@ void Spaceships::move_position_by(int id, glm::vec3 delta)
 	spaceship_im.move_position_by(id, delta);
 }
 
+void Spaceships::SetCollisionStatus(bool status)
+{
+	spaceship_im.SetCollisionStatus(status);
+}
+
+bool Spaceships::GetCollisionStatus()
+{
+	return spaceship_im.GetCollisionStatus();
+}
+
+// Check if player's bullets collide with the enemies
 void Player::check_for_collion_with_enemies(Spaceships* ss)
 {
+	// Iterate through all the bullets shot by the player
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
-		glm::vec3 position = bullets.get_position(i);
-		glm::vec3 bullet_dims = bullets.get_dims(i);
-		for (unsigned int j = 0; j < ss->get_current_num_spaceships(); ++j)
+		// Check if bullet has collision active
+		if (bullets.GetCollisionStatus())
 		{
-			glm::vec3 enemy_position = ss->get_position(j);
-			glm::vec3 enemy_dims = ss->get_dims(j);
+			// Get position and dimensions of a bullet
+			glm::vec3 bullet_position = bullets.get_position(i);
+			glm::vec3 bullet_dims = bullets.get_dims(i);
 
-			/* Collision code */
+			// Get extremeities of bullet
+			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
+			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
+
+			// Iterate through all the enemies
+			for (unsigned int j = 0; j < ss->get_current_num_spaceships(); ++j)
+			{
+				// Check if enemy has collision active
+				if (ss->GetCollisionStatus())
+				{
+					// Get position and dimensions of an enemy
+					glm::vec3 enemy_position = ss->get_position(j);
+					glm::vec3 enemy_dims = ss->get_dims(j);
+
+					// Get extremeities of enemy
+					glm::vec3 enemy_max_dims = enemy_position + (0.5f * enemy_dims);
+					glm::vec3 enemy_min_dims = enemy_position - (0.5f * enemy_dims);
+
+					// Check if bullet and enemy collide (using box-box intersection)
+					if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, enemy_min_dims, enemy_max_dims))
+					{
+						// Collision occurs
+						std::cout << "Collision between bullet " << i << " and enemy " << j << std::endl;
+
+						// Move bullet and enemy behind the camera
+						bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
+						ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, 50.0f)); // Move enemy
+					}
+				}
+			}
 		}
 	}
 }
-
 
 void Player::update()
 {
@@ -244,4 +284,11 @@ void Enemies::show()
 void Enemies::move_position_by(int index, glm::vec3 delta)
 {
 	ss.move_position_by(index, delta);
+}
+
+bool BoxBoxIntersection(glm::vec3 objectMin, glm::vec3 objectMax, glm::vec3 colliderMin, glm::vec3 colliderMax)
+{
+	return ((objectMin.x <= colliderMax.x && objectMax.x >= colliderMin.x) &&
+		(objectMin.y <= colliderMax.y && objectMax.y >= colliderMin.y) &&
+		(objectMin.z <= colliderMax.z && objectMax.z >= colliderMin.z));
 }
