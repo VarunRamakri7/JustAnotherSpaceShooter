@@ -12,13 +12,14 @@
 #include <iostream>
 #include <ctime>
 
-// #include <SFML/Audio.hpp>
+#include <SFML/Audio.hpp>
 
 #include "InitShader.h"
 #include "LoadMesh.h"
 #include "LoadTexture.h"
 #include "InstancedModel.h"
 #include "Spaceships.h"
+#include "ParticleEffects.h"
 
 Color terrain_color_1;
 Color bullet_color_1;
@@ -32,7 +33,6 @@ glm::vec3 light_direction_1;
 #define WIDTH 1920
 #define HEIGHT 1080
 
-// Spaceships spaceships_test;
 Player main_player;
 Enemies enemies;
 
@@ -40,15 +40,20 @@ GLuint instanced_model_shader = -1;
 InstancedModel im_terrain_start;
 InstancedModel im_terrain_mid;
 InstancedModel im_terrain_end;
-//InstancedModel im_bullet;
+
+ParticleEffect pe_1;
+
+sf::Music background_music;
 
 // Window related data
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 // Camera related data
-glm::vec3 camera_pos   = glm::vec3(0.00445641f, 0.254251f, -2.54383f);
-glm::vec3 camera_front = glm::vec3(0.0150221f, -0.292372f, 0.956187f);
+// glm::vec3 camera_pos   = glm::vec3(0.00445641f, 0.254251f, -2.54383f);
+// glm::vec3 camera_front = glm::vec3(0.138021f, -0.201077f, 0.969803f);
+glm::vec3 camera_pos   = glm::vec3(0.00217126f, 0.228749f, -2.51031f);
+glm::vec3 camera_front = glm::vec3(0.00866673f, -0.116671f, 0.993133f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 bool firstMouse = true;
@@ -77,6 +82,72 @@ glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.5f, 0.0f);
 glm::vec3 terrainStart_scale = glm::vec3(3.0f);
 glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+
+void init_terrain()
+{
+	std::string model_folder = "data\\models\\";
+	float upscale_factor = 4.0f;
+
+	im_terrain_start.init(model_folder + "terrain_start.model", instanced_model_shader);
+	im_terrain_mid.init(model_folder + "terrain_mid.model", instanced_model_shader);
+	im_terrain_start.add(glm::vec3(0, 0, 0), terrain_color_1);
+	im_terrain_start.change_scale(0, upscale_factor);
+	im_terrain_start.rotate(0, glm::vec3(0, 1, 0), 180.0f);
+
+	glm::vec3 d1 = im_terrain_start.get_dims(0);
+	im_terrain_start.move_position_by(0, glm::vec3(0, 0, -d1.z / 2.0f * 1.2f));
+
+	glm::vec3 start_position = glm::vec3(0, 0, 0);
+	im_terrain_mid.add(start_position, terrain_color_1);
+	im_terrain_mid.change_scale(0, 0.3784f * upscale_factor);
+	im_terrain_mid.rotate(0, glm::vec3(0, 1, 0), 0);
+	float terrain_mid_depth = im_terrain_mid.get_dims(0).z * 0.95f;
+	for (int i = 1; i < 100; ++i) {
+		glm::vec3 position = glm::vec3(start_position.x, start_position.y, i * terrain_mid_depth);
+		im_terrain_mid.add(position, terrain_color_1);
+		im_terrain_mid.change_scale(i, 0.3784f * upscale_factor);
+		if (i % 2 != 0)
+			im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 180);
+		else
+			im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 0);
+	}
+
+	im_terrain_end.init(model_folder + "terrain_end.model", instanced_model_shader);
+	im_terrain_end.add(glm::vec3(0, 0, 0), terrain_color_1);
+	im_terrain_end.change_scale(0, 0.3784f * upscale_factor);
+	glm::vec3 d2 = im_terrain_mid.get_dims(99);
+	glm::vec3 last_mid_pos = im_terrain_mid.get_front_pos(99, false);
+	im_terrain_end.move_position_to(0, glm::vec3(0, 0, last_mid_pos.z + d2.z / 2.0f * 0.9f));
+}
+
+void init_enemies()
+{
+	std::string model_folder = "data\\models\\";
+
+	enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
+		model_folder + "bullet.model", bullet_color_2);
+	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
+		enemies_color_1);
+	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
+		enemies_color_1);
+	enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
+		enemies_color_1);
+	enemies.add(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
+		enemies_color_1);
+	enemies.add(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
+		enemies_color_1);
+	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
+		enemies_color_1);
+
+	for (unsigned int i = 0; i < im_terrain_mid.get_current_length(); i += 5)
+	{
+		glm::vec3 position = im_terrain_mid.get_position(i);
+
+		enemies.add(glm::vec3(0, 0.2f, position.z), enemies_color_1);
+	}
+
+	enemies.change_scale_of_all(0.1f, 0.025f);
+}
 
 void init_game()
 {
@@ -137,39 +208,8 @@ void init_game()
 	{
 		std::string model_folder = "data\\models\\";
 
-		float upscale_factor = 4.0f;
-
-		// Terrain
-		im_terrain_start.init(model_folder + "terrain_start.model", instanced_model_shader);
-		im_terrain_mid.init(model_folder + "terrain_mid.model", instanced_model_shader);
-		im_terrain_start.add(glm::vec3(0, 0, 0), terrain_color_1);
-		im_terrain_start.change_scale(0, upscale_factor);
-		im_terrain_start.rotate(0, glm::vec3(0, 1, 0), 180.0f);
-
-		glm::vec3 d1 = im_terrain_start.get_dims(0);
-		im_terrain_start.move_position_by(0, glm::vec3(0, 0, -d1.z / 2.0f * 1.2f));
-
-		glm::vec3 start_position = glm::vec3(0, 0, 0);
-		im_terrain_mid.add(start_position, terrain_color_1);
-		im_terrain_mid.change_scale(0, 0.3784f * upscale_factor);
-		im_terrain_mid.rotate(0, glm::vec3(0, 1, 0), 0);
-		float terrain_mid_depth = im_terrain_mid.get_dims(0).z * 0.95f;
-		for (int i = 1; i < 100; ++i) {
-			glm::vec3 position = glm::vec3(start_position.x, start_position.y, i * terrain_mid_depth);
-			im_terrain_mid.add(position, terrain_color_1);
-			im_terrain_mid.change_scale(i, 0.3784f * upscale_factor);
-			if(i % 2 != 0)
-				im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 180);
-			else
-				im_terrain_mid.rotate(i, glm::vec3(0, 1, 0), 0);
-		}
-
-		im_terrain_end.init(model_folder + "terrain_end.model", instanced_model_shader);
-		im_terrain_end.add(glm::vec3(0, 0, 0), terrain_color_1);
-		im_terrain_end.change_scale(0, 0.3784f * upscale_factor);
-		glm::vec3 d2 = im_terrain_mid.get_dims(99);
-		glm::vec3 last_mid_pos = im_terrain_mid.get_front_pos(99, false);
-		im_terrain_end.move_position_to(0, glm::vec3(0, 0, last_mid_pos.z + d2.z / 2.0f * 0.9f));
+		init_terrain();
+		init_enemies();
 		
 		// Player
 		main_player.init(instanced_model_shader, model_folder + "spaceship_main.model",
@@ -178,21 +218,7 @@ void init_game()
 		main_player.change_scale(0.1f);
 
 		// Enemies
-		enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
-			         model_folder + "bullet.model", bullet_color_2);
-		enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
-			        enemies_color_1);
-		enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
-			        enemies_color_1);
-		enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.7f),
-			        enemies_color_1);
-		enemies.add(glm::vec3(+0.2f, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
-			enemies_color_1);
-		enemies.add(glm::vec3(-0.2f, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
-			enemies_color_1);
-		enemies.add(glm::vec3(0, 0.25f, im_terrain_start.get_position(0).z + 0.7f),
-			enemies_color_1);
-		enemies.change_scale_of_all(0.1f, 0.025f);
+		
 	}
 
 	/* Texture initialization */
@@ -202,6 +228,10 @@ void init_game()
 	/* Others */
 	light_position_1 = glm::vec3(0.0f, 2.0f, 0.0f);
 	light_direction_1 = glm::vec3(0.0f, -1.0f, 0.0f);
+
+	pe_1.init("data\\models\\point.model", instanced_model_shader,
+		glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.2f),
+		enemies_color_1);
 }
 
 void draw_gui(GLFWwindow *window)
@@ -227,8 +257,8 @@ void display(GLFWwindow *window)
 {
 	glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
 	glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-	// glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.01f, 100.0f);
-	glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 20.0f);
+	glm::mat4 projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.1f, 5.0f);
+	// glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 20.0f);
 
 	{
 		glUseProgram(instanced_model_shader);
@@ -241,11 +271,14 @@ void display(GLFWwindow *window)
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
 		
+		
 		im_terrain_start.draw();
 		im_terrain_mid.draw();
 		im_terrain_end.draw();
-		main_player.show();
-		enemies.show();
+		main_player.show(enemies.get_spaceships());
+		enemies.show(glfwGetTime(), main_player.get_spaceships());
+		
+		// pe_1.show(glfwGetTime());
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -257,7 +290,7 @@ void display(GLFWwindow *window)
 void idle()
 {
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
-	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	// enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;
 }
 
@@ -388,6 +421,21 @@ void resize(GLFWwindow *window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+void init_game_music()
+{
+	/* Game Background Music */
+	if (!background_music.openFromFile("data\\wav\\arcade_music_loop.wav")) {
+		std::cout << "Could not load file: data\\wav\\arcade_music_loop.wav" << std::endl;
+	}
+	else {
+		background_music.play();
+		background_music.setVolume(15.0f);
+		background_music.setLoop(true);
+	}
+	/* Game Background Music */
+}
+
+
 int main(void)
 {
 	glfwInit();
@@ -414,13 +462,14 @@ int main(void)
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSetKeyCallback(window, keyboard);
-	glfwSetCursorPosCallback(window, mouse_cursor);
+	// glfwSetCursorPosCallback(window, mouse_cursor);
 	glfwSetMouseButtonCallback(window, mouse_button);
 	//glfwSetScrollCallback(window, mouse_scroll);
 	glfwSetWindowSizeCallback(window, resize);
 	glEnable(GL_DEPTH_TEST);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwMaximizeWindow(window);
+	glfwSwapInterval(1);
+	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwMaximizeWindow(window);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -430,11 +479,7 @@ int main(void)
 	srand(unsigned int(time(NULL)));
 
 	init_game();
-
-	/* SFML Test */
-	// sf::SoundBuffer buffer;
-
-	/* SFML Test */
+	init_game_music();
 
 	while (!glfwWindowShouldClose(window))
 	{

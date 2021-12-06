@@ -418,8 +418,12 @@ void InstancedModel::draw()
 	// glBindTexture(GL_TEXTURE_2D, texture_id);
 	glBindVertexArray(vao);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, num_vertices, current_length);
+	// glPointSize(2.0f);
+	// glDrawArraysInstanced(GL_POINTS, 0, num_vertices, current_length);
+	// glPointSize(1.0f);
 }
 
+/* TODO: The Below Functions should not belong here. */
 void InstancedModel::SetCollisionStatus(bool status)
 {
 	this->canCollide = status;
