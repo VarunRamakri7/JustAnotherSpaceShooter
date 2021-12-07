@@ -33,8 +33,12 @@ glm::vec3 light_direction_1;
 #define WIDTH 1920
 #define HEIGHT 1080
 
+#define X_AXIS_MAX 0.5f
+#define X_AXIS_MIN -0.5f
+
 Player main_player;
 Enemies enemies;
+int total_enemies = 0;
 
 GLuint instanced_model_shader = -1;
 InstancedModel im_terrain_start;
@@ -141,6 +145,8 @@ void init_enemies()
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
 		enemies_color_1);
 
+	total_enemies += 6; // Increase number of enemies
+
 	// Iterate through all mid terrains
 	for (unsigned int i = 0; i < im_terrain_mid.get_current_length(); i += 5)
 	{
@@ -152,9 +158,13 @@ void init_enemies()
 		enemies.add(glm::vec3(0.1f, 0.2f, position.z + 1.5f), enemies_color_1);
 		enemies.add(glm::vec3(-0.1f, 0.2f, position.z + 1.5f), enemies_color_1);
 		enemies.add(glm::vec3(0, 0.2f, position.z + 1.5f), enemies_color_1);
+
+		total_enemies += 6; // Increase number of enemies
 	}
 
 	enemies.change_scale_of_all(0.1f, 0.025f);
+
+	std::cout << "Total enemies: " << total_enemies << std::endl;
 }
 
 void init_game()
@@ -297,8 +307,29 @@ void display(GLFWwindow *window)
 
 void idle()
 {
+	// Move enemies
+	for (int i = 0; i < total_enemies; i++)
+	{
+		// Calculate random X-Axis position
+		float randX = X_AXIS_MIN + ((float)rand() / (float(RAND_MAX / (X_AXIS_MAX - X_AXIS_MIN)))); // Get random float in range [-randLow, randHigh]
+
+		enemies.move_position_by(i, glm::vec3(randX, 0.0f, 0.0f));
+
+		// Check if spaceship is out of bounds [-0.5f, 0.5f]
+		float enemy_posX = enemies.get_spaceships()->get_position(i).x;
+		if (enemy_posX > X_AXIS_MAX)
+		{
+			// Decreae spaceship position
+			enemies.move_position_by(i, glm::vec3(-0.8f * randX, 0.0f, 0.0f));
+		}
+		else if (enemy_posX < X_AXIS_MIN)
+		{
+			// Increae spaceship position
+			enemies.move_position_by(i, glm::vec3(0.8f * randX, 0.0f, 0.0f));
+		}
+	}
+
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
-	// enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;
 }
 
@@ -488,6 +519,9 @@ int main(void)
 
 	init_game();
 	init_game_music();
+
+	// Seed random number generator
+	srand(static_cast <unsigned> (time(0)));
 
 	while (!glfwWindowShouldClose(window))
 	{
