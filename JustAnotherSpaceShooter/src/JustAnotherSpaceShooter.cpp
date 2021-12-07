@@ -126,6 +126,8 @@ void init_enemies()
 
 	enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
 		model_folder + "bullet.model", bullet_color_2);
+
+	// Starting enemies
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
 		enemies_color_1);
 	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
@@ -139,11 +141,17 @@ void init_enemies()
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
 		enemies_color_1);
 
+	// Iterate through all mid terrains
 	for (unsigned int i = 0; i < im_terrain_mid.get_current_length(); i += 5)
 	{
 		glm::vec3 position = im_terrain_mid.get_position(i);
 
-		enemies.add(glm::vec3(0, 0.2f, position.z), enemies_color_1);
+		enemies.add(glm::vec3(0, 0.2f, position.z + 1.2f), enemies_color_1);
+		enemies.add(glm::vec3(-0.2f, 0.2f, position.z + 1.2f), enemies_color_1);
+		enemies.add(glm::vec3(0.2f, 0.2f, position.z + 1.2f), enemies_color_1);
+		enemies.add(glm::vec3(0.1f, 0.2f, position.z + 1.5f), enemies_color_1);
+		enemies.add(glm::vec3(-0.1f, 0.2f, position.z + 1.5f), enemies_color_1);
+		enemies.add(glm::vec3(0, 0.2f, position.z + 1.5f), enemies_color_1);
 	}
 
 	enemies.change_scale_of_all(0.1f, 0.025f);
@@ -453,7 +461,7 @@ int main(void)
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 	//GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
 	//	primary_monitor, NULL);
-	GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, window_name, NULL, NULL);
 	
 	window_dims.x = mode->width;
 	window_dims.y = mode->height;
