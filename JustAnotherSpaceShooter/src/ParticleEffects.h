@@ -19,4 +19,5 @@ public:
 	void start();
 	void set_initial_position(glm::vec3 initial_position);
 	void move_position_of_all_by(glm::vec3 delta);
+	void reset(glm::vec3 new_initial_position);
 };

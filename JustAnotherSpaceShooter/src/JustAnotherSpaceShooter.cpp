@@ -27,7 +27,7 @@ Color bullet_color_2;
 Color spaceship_color;
 Color enemies_color_green;
 Color enemies_color_blue;
-Color enemies_color_yellow;
+Color enemies_color_black;
 Color particles_color_1;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
@@ -49,14 +49,16 @@ InstancedModel im_terrain_end;
 
 sf::Music background_music;
 
-// Window related data
+float delay_to_next_formation = 2.0f;
+float next_formation_start_tick = 0;
+float next_formation_current_tick = 0;
+bool start_formation_delay = false;
+
 glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
-// Camera related data
-// glm::vec3 camera_pos   = glm::vec3(0.00445641f, 0.254251f, -2.54383f);
-// glm::vec3 camera_front = glm::vec3(0.138021f, -0.201077f, 0.969803f);
-glm::vec3 camera_pos   = glm::vec3(0.33971f, 1.14269f, -5.36388f);
+const glm::vec3 initial_camera_pos = glm::vec3(0.33971f, 1.14269f, -5.36388f);
+glm::vec3 camera_pos = initial_camera_pos;
 glm::vec3 camera_front = glm::vec3(-0.0931682f, -0.297374f, 0.950204f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -77,15 +79,65 @@ float moveSideFactor = 0.3f; // Was 0.2
 float flightSpeed = 0.1f;
 float scaleFactor = 1.0f;
 
-// Spaceship related
-glm::vec3 spaceship_pos = glm::vec3(0.0f, 0.0f, 5.0f);
-glm::vec3 spaceship_scale = glm::vec3(1.0f);
-glm::vec3 spaceship_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+unsigned int current_enemy_formation_index = 0;
+std::vector<std::vector<glm::vec3>> all_enemy_formations;
 
-// Terrain related data
-glm::vec3 terrainStart_pos = glm::vec3(0.0f, -0.5f, 0.0f);
-glm::vec3 terrainStart_scale = glm::vec3(3.0f);
-glm::vec3 terrainStart_rot = glm::vec3(0.0f, 1.0f, 0.0f);
+void init_all_enemy_formations()
+{
+	/* Formation 1 */
+	{
+		std::vector<glm::vec3> positions;
+
+		positions.push_back(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+
+		all_enemy_formations.push_back(positions);
+	}
+	/* Formation 1 */
+
+	/* Formation 2 */
+	{
+		std::vector<glm::vec3> positions;
+
+		positions.push_back(glm::vec3(0.0f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(+0.4f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
+		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(-0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(+0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+
+		all_enemy_formations.push_back(positions);
+	}
+	/* Formation 2 */
+}
 
 void init_terrain()
 {
@@ -130,7 +182,7 @@ void init_enemies()
 
 	enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
 		model_folder + "bullet.model", bullet_color_2,
-		model_folder + "point.model", instanced_model_shader);
+		model_folder + "point.model", instanced_model_shader);	
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
 		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
@@ -138,19 +190,39 @@ void init_enemies()
 	enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
 		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_yellow, particles_color_1);
+		enemies_color_black, particles_color_1);
 	enemies.add(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_yellow, particles_color_1);
+		enemies_color_black, particles_color_1);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_yellow, particles_color_1);
+		enemies_color_black, particles_color_1);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
 		enemies_color_blue, particles_color_1);
 	enemies.add(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
 		enemies_color_blue, particles_color_1);
 	enemies.add(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
 		enemies_color_blue, particles_color_1);
+	enemies.add(glm::vec3(+0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.6f),
+		enemies_color_green, particles_color_1);
+	enemies.add(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 0.6f),
+		enemies_color_green, particles_color_1);
+	enemies.add(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 0.6f),
+		enemies_color_green, particles_color_1);
+	enemies.add(glm::vec3(+0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.3f),
+		enemies_color_black, particles_color_1);
+	enemies.add(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.3f),
+		enemies_color_black, particles_color_1);
+	enemies.add(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.3f),
+		enemies_color_black, particles_color_1);
+	enemies.add(glm::vec3(+0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.0f),
+		enemies_color_blue, particles_color_1);
+	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.0f),
+		enemies_color_blue, particles_color_1);
+	enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.0f),
+		enemies_color_blue, particles_color_1);
 
 	enemies.change_scale_of_all(0.1f, 0.025f);
+
+	init_all_enemy_formations();
 }
 
 void init_game()
@@ -207,13 +279,13 @@ void init_game()
 		enemies_color_blue.Ks = glm::vec3(1.0f);
 		enemies_color_blue.shininess = 32.0f;
 
-		enemies_color_yellow.La = glm::vec3(0.215f, 0.2745f, 0.2515f);
-		enemies_color_yellow.Ld = glm::vec3(0.17568f, 0.11424f, 0.17568f);
-		enemies_color_yellow.Ls = glm::vec3(0.133f, 0.127811f, 0.133f);
-		enemies_color_yellow.Ka = glm::vec3(1.0f);
-		enemies_color_yellow.Kd = glm::vec3(1.0f);
-		enemies_color_yellow.Ks = glm::vec3(1.0f);
-		enemies_color_yellow.shininess = 32.0f;
+		enemies_color_black.La = glm::vec3(0.115f, 0.1745f, 0.1515f);
+		enemies_color_black.Ld = glm::vec3(0.17568f, 0.11424f, 0.17568f);
+		enemies_color_black.Ls = glm::vec3(0.133f, 0.127811f, 0.133f);
+		enemies_color_black.Ka = glm::vec3(1.0f);
+		enemies_color_black.Kd = glm::vec3(1.0f);
+		enemies_color_black.Ks = glm::vec3(1.0f);
+		enemies_color_black.shininess = 32.0f;
 
 		spaceship_color.La = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		spaceship_color.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
@@ -276,7 +348,7 @@ void draw_gui(GLFWwindow *window)
 
 void display(GLFWwindow *window)
 {
-	glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
+	// glm::vec3 camLookAt = glm::vec3(0.0f, 2.0f, 5.0f);
 	glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
 	glm::mat4 projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.01f, 10.0f);
 	// glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 20.0f);
@@ -305,8 +377,37 @@ void display(GLFWwindow *window)
 	draw_gui(window);
 }
 
+void reset_and_goto_next_formation()
+{
+	start_formation_delay = false;
+	next_formation_current_tick = 0;
+	next_formation_start_tick = 0;
+
+	current_enemy_formation_index += 1;
+	if (current_enemy_formation_index >= all_enemy_formations.size())
+		current_enemy_formation_index = 0;
+
+	enemies.reset(all_enemy_formations[current_enemy_formation_index]);
+	main_player.reset(glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z - 0.8f));
+	camera_pos = initial_camera_pos;
+}
+
 void idle()
 {
+	if (enemies.are_all_enemies_destroyed() && start_formation_delay == false) {
+		start_formation_delay = true;
+		next_formation_start_tick = glfwGetTime();
+		next_formation_current_tick = next_formation_start_tick;
+	}
+
+	if (start_formation_delay)
+		next_formation_current_tick = glfwGetTime();
+
+	if (start_formation_delay && (next_formation_current_tick - next_formation_start_tick)
+		>= delay_to_next_formation) {
+		reset_and_goto_next_formation();
+	}
+
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;

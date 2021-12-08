@@ -87,17 +87,21 @@ void Player::check_for_collision_with_enemies(Enemies *enemies)
 
 				if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, enemy_min_dims, enemy_max_dims))
 				{
-					std::cout << "Collision between bullet " << i << " and enemy " << j << std::endl;
-
 					bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f));
 					enemies->start_particle_effect_for(j);
-					enemies->set_enemy_destroyed(i);
+					enemies->set_enemy_destroyed(j);
 					enemy_hit_sound.play();
 					enemies_ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, -50.0f));
 				}
 			}
 		}
 	}
+}
+
+void Player::reset(glm::vec3 new_position)
+{
+	this->bullets_shot = 0;
+	move_position_to(new_position);
 }
 
 void Player::update(Enemies *enemies)
@@ -120,6 +124,14 @@ void Player::shoot_bullet()
 void Player::move_position_by(glm::vec3 delta)
 {
 	ss.move_position_by(0, delta);
+	for (unsigned int i = bullets_shot; i < total_ammo; ++i) {
+		bullets.move_position_to(i, ss.get_front_pos(0, false));
+	}
+}
+
+void Player::move_position_to(glm::vec3 new_position)
+{
+	ss.move_position_to(0, new_position);
 	for (unsigned int i = bullets_shot; i < total_ammo; ++i) {
 		bullets.move_position_to(i, ss.get_front_pos(0, false));
 	}
@@ -184,6 +196,30 @@ void Player::init(GLuint program_id,
 void Spaceships::show() 
 {
 	spaceship_im.draw(GL_TRIANGLES);
+}
+
+void Enemies::reset(std::vector<glm::vec3> new_enemy_positions)
+{
+	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
+	{
+		enemy_destroyed[i] = false;
+		ss.move_position_to(i, new_enemy_positions[i]);
+		bullets_shot[i] = 0;
+		particle_effects[i].reset(new_enemy_positions[i]);
+		
+		for (unsigned int j = 0; j < total_ammo; ++j) {
+			bullets[i].move_position_to(j, ss.get_front_pos(i, true));
+		}
+	}
+}
+
+bool Enemies::are_all_enemies_destroyed()
+{
+	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i) {
+		if (enemy_destroyed[i] == false) return false;
+	}
+
+	return true;
 }
 
 void Enemies::init(GLuint program_id, std::string enemy_model_filename,

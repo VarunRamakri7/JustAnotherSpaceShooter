@@ -32,6 +32,30 @@ void ParticleEffect::init(std::string model_filename, GLuint program_id,
 	}
 }
 
+void ParticleEffect::reset(glm::vec3 new_initial_position)
+{
+	this->initial_position = new_initial_position;
+	this->blast_upward_count = 0;
+	this->start_effect = false;
+	this->blast_upwards = false;
+
+	float speed = 0.003f;
+	float phi = 3.14f * (3 - sqrt(5));
+	float into_rad = 3.14f / 180.0f;
+	for (unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
+	{
+		particles.move_position_to(i, initial_position);
+
+		glm::vec3 vel;
+		vel.y = 1 - (i / (float)(MAX_INSTANCED_MODELS - 1)) * 2;
+		float radius = sqrt(1 - vel.y * vel.y);
+		float theta = phi * i;
+		vel.x = cos(theta) * radius;
+		vel.z = sin(theta) * radius;
+		velocities[i] = vel * speed;
+	}
+}
+
 void ParticleEffect::start()
 {
 	start_effect = true;

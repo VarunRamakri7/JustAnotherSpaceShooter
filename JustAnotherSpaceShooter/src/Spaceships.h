@@ -5,6 +5,8 @@
 #include <SFML/Audio.hpp>
 #include <vector>
 
+#include <iostream> // @TMP
+
 class Spaceships {
 private:
 	InstancedModel spaceship_im;
@@ -14,7 +16,7 @@ public:
 	void init(std::string model_filename, GLuint program_id);
 	void add_new_spaceship(glm::vec3 position, Color color);
 	void change_scale(int index, float factor);
-	void move_position_to(int index, glm::vec3 delta);
+	void move_position_to(int index, glm::vec3 new_position);
 	glm::vec3 get_front_pos(int index, bool flip_on_y_180);
 	void move_position_by(int id, glm::vec3 delta);
 	unsigned int get_current_num_spaceships();
@@ -51,8 +53,10 @@ public:
 	glm::vec3 get_front_position();
 	void show(Enemies *enemies);
 	void move_position_by(glm::vec3 delta);
+	void move_position_to(glm::vec3 new_position);
 	void check_for_collision_with_enemies(Enemies *enemies);
 	Spaceships* get_spaceships();
+	void reset(glm::vec3 new_position);
 };
 
 class Enemies {
@@ -81,11 +85,13 @@ public:
 	void change_scale_of_all(float enemy_scale_factor, float bullet_scale_factor);
 	void move_position_of_all_by(glm::vec3 delta);
 	void check_if_hit_player(Spaceships* ss);
+	void reset(std::vector<glm::vec3> new_enemy_positions);
 	
 	Spaceships* get_spaceships() { return &ss; }
 	void start_particle_effect_for(int index);
 	void set_enemy_destroyed(int index) { enemy_destroyed[index] = true; }
 	bool is_enemy_destroyed(int index) { return enemy_destroyed[index]; }
+	bool are_all_enemies_destroyed();
 };
 
 bool BoxBoxIntersection(glm::vec3 objectMin, glm::vec3 objectMax, glm::vec3 colliderMin, glm::vec3 colliderMax);
