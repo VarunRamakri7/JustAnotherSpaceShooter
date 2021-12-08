@@ -62,7 +62,7 @@ class InstancedModel
         void change_scale(int index, glm::vec3 factor);
         void rotate(int index, glm::vec3 axes, float degree);
         float get_scale_factor();
-        void draw();
+        void draw(GLenum mode);
         void add(glm::vec3 position, Color color);
         glm::vec3 get_dims(int index);
         unsigned int get_current_length();

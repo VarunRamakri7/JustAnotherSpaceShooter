@@ -26,6 +26,7 @@ Color bullet_color_1;
 Color bullet_color_2;
 Color spaceship_color;
 Color enemies_color_1;
+Color particles_color_1;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
@@ -41,7 +42,7 @@ InstancedModel im_terrain_start;
 InstancedModel im_terrain_mid;
 InstancedModel im_terrain_end;
 
-ParticleEffect pe_1;
+// ParticleEffect pe_1;
 
 sf::Music background_music;
 
@@ -125,26 +126,28 @@ void init_enemies()
 	std::string model_folder = "data\\models\\";
 
 	enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
-		model_folder + "bullet.model", bullet_color_2);
+		model_folder + "bullet.model", bullet_color_2,
+		model_folder + "point.model", instanced_model_shader);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 	enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 	enemies.add(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 	enemies.add(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1);
+		enemies_color_1, particles_color_1);
 
+	/*
 	for (unsigned int i = 0; i < im_terrain_mid.get_current_length(); i += 5)
 	{
 		glm::vec3 position = im_terrain_mid.get_position(i);
-
-		enemies.add(glm::vec3(0, 0.2f, position.z), enemies_color_1);
+		enemies.add(glm::vec3(0, 0.2f, position.z), enemies_color_1, particles_color_1);
 	}
+	*/
 
 	enemies.change_scale_of_all(0.1f, 0.025f);
 }
@@ -202,6 +205,14 @@ void init_game()
 		spaceship_color.Kd = glm::vec3(1.0f);
 		spaceship_color.Ks = glm::vec3(1.0f);
 		spaceship_color.shininess = 32.0f;
+
+		particles_color_1.La = glm::vec3(1.0f, 1.0f, 0.0f);
+		particles_color_1.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
+		particles_color_1.Ls = glm::vec3(0.727f, 0.626f, 0.626f);
+		particles_color_1.Ka = glm::vec3(1.0f);
+		particles_color_1.Kd = glm::vec3(1.0f);
+		particles_color_1.Ks = glm::vec3(1.0f);
+		particles_color_1.shininess = 32.0f;
 	}
 
 	/* Model initialization */
@@ -216,9 +227,6 @@ void init_game()
 			glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z), spaceship_color,
 			model_folder + "bullet.model", bullet_color_1);
 		main_player.change_scale(0.1f);
-
-		// Enemies
-		
 	}
 
 	/* Texture initialization */
@@ -228,10 +236,6 @@ void init_game()
 	/* Others */
 	light_position_1 = glm::vec3(0.0f, 2.0f, 0.0f);
 	light_direction_1 = glm::vec3(0.0f, -1.0f, 0.0f);
-
-	pe_1.init("data\\models\\point.model", instanced_model_shader,
-		glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.2f),
-		enemies_color_1);
 }
 
 void draw_gui(GLFWwindow *window)
@@ -272,13 +276,11 @@ void display(GLFWwindow *window)
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
 		
 		
-		im_terrain_start.draw();
-		im_terrain_mid.draw();
-		im_terrain_end.draw();
-		main_player.show(enemies.get_spaceships());
+		im_terrain_start.draw(GL_TRIANGLES);
+		im_terrain_mid.draw(GL_TRIANGLES);
+		im_terrain_end.draw(GL_TRIANGLES);
+		main_player.show(&enemies);
 		enemies.show(glfwGetTime(), main_player.get_spaceships());
-		
-		// pe_1.show(glfwGetTime());
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -290,7 +292,7 @@ void display(GLFWwindow *window)
 void idle()
 {
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
-	// enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;
 }
 
@@ -429,7 +431,7 @@ void init_game_music()
 	}
 	else {
 		background_music.play();
-		background_music.setVolume(15.0f);
+		background_music.setVolume(10.0f);
 		background_music.setLoop(true);
 	}
 	/* Game Background Music */
@@ -451,9 +453,9 @@ int main(void)
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	//GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
-	//	primary_monitor, NULL);
-	GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
+		primary_monitor, NULL);
+	// GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
 	
 	window_dims.x = mode->width;
 	window_dims.y = mode->height;
@@ -470,6 +472,7 @@ int main(void)
 	glfwSwapInterval(1);
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	// glfwMaximizeWindow(window);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

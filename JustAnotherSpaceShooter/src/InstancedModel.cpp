@@ -349,7 +349,7 @@ void InstancedModel::rotate(int index, glm::vec3 axes, float degree)
 	}
 }
 
-void InstancedModel::draw()
+void InstancedModel::draw(GLenum mode)
 {
 	glUseProgram(program_id);
 
@@ -417,10 +417,7 @@ void InstancedModel::draw()
 
 	// glBindTexture(GL_TEXTURE_2D, texture_id);
 	glBindVertexArray(vao);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, num_vertices, current_length);
-	// glPointSize(2.0f);
-	// glDrawArraysInstanced(GL_POINTS, 0, num_vertices, current_length);
-	// glPointSize(1.0f);
+	glDrawArraysInstanced(mode, 0, num_vertices, current_length);
 }
 
 /* TODO: The Below Functions should not belong here. */

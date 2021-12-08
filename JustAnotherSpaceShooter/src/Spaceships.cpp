@@ -62,8 +62,9 @@ bool Spaceships::GetCollisionStatus()
 }
 
 /* @NOTE: This function is incorrect */
-void Player::check_for_collion_with_enemies(Spaceships* enemies_ss)
+void Player::check_for_collion_with_enemies(Enemies *enemies)
 {
+	Spaceships* enemies_ss = enemies->get_spaceships();
 	// Iterate through all the bullets shot by the player
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
@@ -101,6 +102,8 @@ void Player::check_for_collion_with_enemies(Spaceships* enemies_ss)
 
 					// Move bullet and enemy behind the camera
 					bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
+					enemies->start_particle_effect_for(j);
+					enemy_hit_sound.play();
 					enemies_ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, 50.0f)); // Move enemy
 				}
 			}
@@ -108,14 +111,14 @@ void Player::check_for_collion_with_enemies(Spaceships* enemies_ss)
 	}
 }
 
-void Player::update(Spaceships *enemy_ss)
+void Player::update(Enemies *enemies)
 {
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
 		bullets.move_position_by(i, glm::vec3(0, 0, bullet_speed));
 
 		// Check collision
-		check_for_collion_with_enemies(enemy_ss);
+		check_for_collion_with_enemies(enemies);
 	}
 }
 
@@ -135,11 +138,11 @@ void Player::move_position_by(glm::vec3 delta)
 	}
 }
 
-void Player::show(Spaceships *enemy_ss)
+void Player::show(Enemies *enemies)
 {
 	ss.show();
-	update(enemy_ss);
-	bullets.draw();
+	update(enemies);
+	bullets.draw(GL_TRIANGLES);
 }
 
 void Player::change_scale(float factor)
@@ -182,41 +185,56 @@ void Player::init(GLuint program_id,
 	else {
 		shoot_bullet_sound.setBuffer(shoot_bullet_sound_buffer);
 	}
+	if (!enemy_hit_sound_buffer.loadFromFile("data\\wav\\enemy_hit.wav")) {
+		std::cout << "Error: Could not load file: data\\wav\\enemy_hit.wav" << std::endl;
+	}
+	else {
+		enemy_hit_sound.setBuffer(enemy_hit_sound_buffer);
+	}
 	/* Sound Initialization */
 }
 
 void Spaceships::show() 
 {
-	spaceship_im.draw();
+	spaceship_im.draw(GL_TRIANGLES);
 }
 
 void Enemies::init(GLuint program_id, std::string enemy_model_filename,
-	std::string bullet_model_filename, Color bullet_color)
+	std::string bullet_model_filename, Color bullet_color,
+	std::string particle_effect_model_filename, GLuint particle_effect_program_id)
 {
 	ss.init(enemy_model_filename, program_id);
 	bullets = (InstancedModel*)malloc(sizeof(InstancedModel) * MAX_INSTANCED_MODELS);
+	particle_effects = (ParticleEffect*)malloc(sizeof(ParticleEffect) * MAX_INSTANCED_MODELS);
 	this->bullets_shot = (unsigned int*)malloc(sizeof(unsigned int) * MAX_INSTANCED_MODELS);
 	this->bullet_color = bullet_color;
 	this->bullet_speed = 0.02f;
+	this->particle_effect_model_filename = particle_effect_model_filename;
+	this->particle_effect_program_id = particle_effect_program_id;
 
 	if (bullets)
-	{
 		for (unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
-		{
 			bullets[i].init(bullet_model_filename, program_id);
-		}
-	}
 	else
-	{
 		std::cout << "ERROR: Unable to allocate memory for bullets!!!" << std::endl;
-	}
+
+	if (!particle_effects)
+		std::cout << "ERROR: Unable to allocate memory for particle_effects!!!" << std::endl;
 }
 
-void Enemies::add(glm::vec3 position, Color color)
+void Enemies::start_particle_effect_for(int index)
 {
-	ss.add_new_spaceship(position, color);
+	particle_effects[index].start();
+}
+
+void Enemies::add(glm::vec3 position, Color enemy_color, Color particle_color)
+{
+	ss.add_new_spaceship(position, enemy_color);
 	unsigned int index = ss.get_current_num_spaceships() - 1;
 	ss.rotate(index, glm::vec3(0, 1, 0), 180);
+
+	particle_effects[index].init(particle_effect_model_filename, particle_effect_program_id,
+		position, particle_color);
 
 	for (unsigned int i = 0; i < total_ammo; ++i)
 	{
@@ -283,9 +301,7 @@ void Enemies::update(float current_global_tick, Spaceships *player_ss)
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
 		for (unsigned int j = 0; j < bullets_shot[i]; ++j)
-		{
 			bullets[i].move_position_by(j, glm::vec3(0, 0, bullet_speed));
-		}
 	}
 
 	// Check collision with player
@@ -297,6 +313,7 @@ void Enemies::move_position_of_all_by(glm::vec3 delta)
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
 		ss.move_position_by(i, delta);
+		particle_effects[i].move_position_of_all_by(delta);
 		for (unsigned int j = bullets_shot[i]; j < total_ammo; ++j)
 		{
 			bullets[i].move_position_to(j, ss.get_front_pos(i, true));
@@ -321,8 +338,10 @@ void Enemies::show(float current_global_tick, Spaceships *player_ss)
 	update(current_global_tick, player_ss);
 	ss.show();
 	
-	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
-		bullets[i].draw();
+	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i) {
+		particle_effects[i].show(current_global_tick);
+		bullets[i].draw(GL_TRIANGLES);
+	}
 }
 
 void Enemies::move_position_by(int index, glm::vec3 delta)
