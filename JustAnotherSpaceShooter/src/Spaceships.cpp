@@ -62,49 +62,38 @@ bool Spaceships::GetCollisionStatus()
 }
 
 /* @NOTE: This function is incorrect */
-void Player::check_for_collion_with_enemies(Enemies *enemies)
+void Player::check_for_collision_with_enemies(Enemies *enemies)
 {
 	Spaceships* enemies_ss = enemies->get_spaceships();
-	// Iterate through all the bullets shot by the player
+
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
-		// Check if bullet has collision active
 		if (bullets.GetCollisionStatus())
 		{
-			// Get position and dimensions of a bullet
 			glm::vec3 bullet_position = bullets.get_position(i);
 			glm::vec3 bullet_dims = bullets.get_dims(i);
-
-			// Get extremeities of bullet
 			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
 			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
 
-			// Iterate through all the ships except the player (index 0)
 			for (unsigned int j = 0; j < enemies_ss->get_current_num_spaceships(); ++j)
 			{
-				// Get position and dimensions of an enemy
+				if (enemies->is_enemy_destroyed(i))
+					continue;
+
 				glm::vec3 enemy_position = enemies_ss->get_position(j);
 				glm::vec3 enemy_dims = enemies_ss->get_dims(j);
-
-				// Get extremeities of enemy
 				glm::vec3 enemy_max_dims = enemy_position + (0.5f * enemy_dims);
 				glm::vec3 enemy_min_dims = enemy_position - (0.5f * enemy_dims);
 
-				// Check if bullet and enemy collide (using box-box intersection)
 				if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, enemy_min_dims, enemy_max_dims))
 				{
-					// Collision occurs
 					std::cout << "Collision between bullet " << i << " and enemy " << j << std::endl;
 
-					// Disable collision for bullet and enemy
-					// bullets.SetCollisionStatus(false);
-					// enemies_ss->SetCollisionStatus(false);
-
-					// Move bullet and enemy behind the camera
-					bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
+					bullets.move_position_to(i, glm::vec3(i, 0.0f, 0.0f));
 					enemies->start_particle_effect_for(j);
+					enemies->set_enemy_destroyed(i);
 					enemy_hit_sound.play();
-					enemies_ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, 50.0f)); // Move enemy
+					enemies_ss->move_position_to(j, glm::vec3(j * 2.0f, 0.0f, -50.0f));
 				}
 			}
 		}
@@ -116,9 +105,7 @@ void Player::update(Enemies *enemies)
 	for (unsigned int i = 0; i < bullets_shot; ++i)
 	{
 		bullets.move_position_by(i, glm::vec3(0, 0, bullet_speed));
-
-		// Check collision
-		check_for_collion_with_enemies(enemies);
+		check_for_collision_with_enemies(enemies);
 	}
 }
 
@@ -207,8 +194,9 @@ void Enemies::init(GLuint program_id, std::string enemy_model_filename,
 	bullets = (InstancedModel*)malloc(sizeof(InstancedModel) * MAX_INSTANCED_MODELS);
 	particle_effects = (ParticleEffect*)malloc(sizeof(ParticleEffect) * MAX_INSTANCED_MODELS);
 	this->bullets_shot = (unsigned int*)malloc(sizeof(unsigned int) * MAX_INSTANCED_MODELS);
+	this->enemy_destroyed = (bool*)malloc(sizeof(bool) * MAX_INSTANCED_MODELS);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = 0.02f;
+	this->bullet_speed = -0.005f;
 	this->particle_effect_model_filename = particle_effect_model_filename;
 	this->particle_effect_program_id = particle_effect_program_id;
 
@@ -220,6 +208,13 @@ void Enemies::init(GLuint program_id, std::string enemy_model_filename,
 
 	if (!particle_effects)
 		std::cout << "ERROR: Unable to allocate memory for particle_effects!!!" << std::endl;
+
+	if (enemy_destroyed) {
+		for (unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
+			enemy_destroyed[i] = false;
+	}
+	else
+		std::cout << "ERROR: Unable to allocate memory for enemy_destroyed" << std::endl;
 }
 
 void Enemies::start_particle_effect_for(int index)
@@ -243,23 +238,17 @@ void Enemies::add(glm::vec3 position, Color enemy_color, Color particle_color)
 	}
 }
 
-/* @NOTE: This function is incorrect */
 void Enemies::check_if_hit_player(Spaceships* player_ss)
 {
 	glm::vec3 player_position = player_ss->get_position(0);
 	glm::vec3 player_dims = player_ss->get_dims(0);
 
-	// Iterate through all the enemies
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
-		// Iterate through all the bullets shot by the enemy
 		for (unsigned int j = 0; j < bullets_shot[i]; ++j)
 		{
-			// Get position and dimensions of a bullet
 			glm::vec3 bullet_position = bullets[i].get_position(j);
 			glm::vec3 bullet_dims = bullets[i].get_dims(j);
-
-			// Get extremeities of bullet
 			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
 			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
 
@@ -271,9 +260,7 @@ void Enemies::check_if_hit_player(Spaceships* player_ss)
 			if (BoxBoxIntersection(bullet_max_dims, bullet_min_dims, player_min_pos, player_max_pos))
 			{
 				std::cout << "Collision between bullet " << j << " and player from enemy " << i << std::endl;
-
-				// Move bullet and enemy behind the camera
-				bullets[i].move_position_to(i, glm::vec3(i, 0.0f, 0.0f)); // Move bullet
+				bullets[i].move_position_to(i, glm::vec3(i, 0.0f, 0.0f));
 			}
 		}
 	}
@@ -283,7 +270,7 @@ void Enemies::shoot_bullets()
 {
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
-		if ((rand() % 100 > 80) && bullets_shot[i] < total_ammo)
+		if ((rand() % 100 > 60) && bullets_shot[i] < total_ammo)
 		{
 			bullets_shot[i] += 1;
 		}
@@ -304,7 +291,6 @@ void Enemies::update(float current_global_tick, Spaceships *player_ss)
 			bullets[i].move_position_by(j, glm::vec3(0, 0, bullet_speed));
 	}
 
-	// Check collision with player
 	check_if_hit_player(player_ss);
 }
 

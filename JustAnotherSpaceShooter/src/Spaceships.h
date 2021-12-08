@@ -51,7 +51,7 @@ public:
 	glm::vec3 get_front_position();
 	void show(Enemies *enemies);
 	void move_position_by(glm::vec3 delta);
-	void check_for_collion_with_enemies(Enemies *enemies);
+	void check_for_collision_with_enemies(Enemies *enemies);
 	Spaceships* get_spaceships();
 };
 
@@ -64,6 +64,7 @@ private:
 	const unsigned int total_ammo = 50; /* @Note: This should be below MAX_INSTANCED_MODELS */
 	float bullet_speed;
 	unsigned int *bullets_shot;
+	bool* enemy_destroyed;
 
 	GLuint particle_effect_program_id;
 	std::string particle_effect_model_filename;
@@ -80,8 +81,11 @@ public:
 	void change_scale_of_all(float enemy_scale_factor, float bullet_scale_factor);
 	void move_position_of_all_by(glm::vec3 delta);
 	void check_if_hit_player(Spaceships* ss);
+	
 	Spaceships* get_spaceships() { return &ss; }
 	void start_particle_effect_for(int index);
+	void set_enemy_destroyed(int index) { enemy_destroyed[index] = true; }
+	bool is_enemy_destroyed(int index) { return enemy_destroyed[index]; }
 };
 
 bool BoxBoxIntersection(glm::vec3 objectMin, glm::vec3 objectMax, glm::vec3 colliderMin, glm::vec3 colliderMax);

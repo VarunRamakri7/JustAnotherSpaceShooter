@@ -25,7 +25,9 @@ Color terrain_color_1;
 Color bullet_color_1;
 Color bullet_color_2;
 Color spaceship_color;
-Color enemies_color_1;
+Color enemies_color_green;
+Color enemies_color_blue;
+Color enemies_color_yellow;
 Color particles_color_1;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
@@ -34,6 +36,9 @@ glm::vec3 light_direction_1;
 #define WIDTH 1920
 #define HEIGHT 1080
 
+#define X_AXIS_MAX +0.5f
+#define X_AXIS_MIN -0.5f
+
 Player main_player;
 Enemies enemies;
 
@@ -41,8 +46,6 @@ GLuint instanced_model_shader = -1;
 InstancedModel im_terrain_start;
 InstancedModel im_terrain_mid;
 InstancedModel im_terrain_end;
-
-// ParticleEffect pe_1;
 
 sf::Music background_music;
 
@@ -53,8 +56,8 @@ float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 // Camera related data
 // glm::vec3 camera_pos   = glm::vec3(0.00445641f, 0.254251f, -2.54383f);
 // glm::vec3 camera_front = glm::vec3(0.138021f, -0.201077f, 0.969803f);
-glm::vec3 camera_pos   = glm::vec3(0.00217126f, 0.228749f, -2.51031f);
-glm::vec3 camera_front = glm::vec3(0.00866673f, -0.116671f, 0.993133f);
+glm::vec3 camera_pos   = glm::vec3(0.33971f, 1.14269f, -5.36388f);
+glm::vec3 camera_front = glm::vec3(-0.0931682f, -0.297374f, 0.950204f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 bool firstMouse = true;
@@ -69,8 +72,8 @@ float lastFrame = 0.0f;
 
 // World Related data
 const glm::vec3 origin = glm::vec3(0.0f);
-float moveFactor = 3.0f;
-float moveSideFactor = 0.2f;
+float moveFactor = 1.5f;
+float moveSideFactor = 0.3f; // Was 0.2
 float flightSpeed = 0.1f;
 float scaleFactor = 1.0f;
 
@@ -129,25 +132,23 @@ void init_enemies()
 		model_folder + "bullet.model", bullet_color_2,
 		model_folder + "point.model", instanced_model_shader);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1, particles_color_1);
+		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1, particles_color_1);
+		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
-		enemies_color_1, particles_color_1);
+		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(+0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1, particles_color_1);
+		enemies_color_yellow, particles_color_1);
 	enemies.add(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1, particles_color_1);
+		enemies_color_yellow, particles_color_1);
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.5f),
-		enemies_color_1, particles_color_1);
-
-	/*
-	for (unsigned int i = 0; i < im_terrain_mid.get_current_length(); i += 5)
-	{
-		glm::vec3 position = im_terrain_mid.get_position(i);
-		enemies.add(glm::vec3(0, 0.2f, position.z), enemies_color_1, particles_color_1);
-	}
-	*/
+		enemies_color_yellow, particles_color_1);
+	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
+		enemies_color_blue, particles_color_1);
+	enemies.add(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
+		enemies_color_blue, particles_color_1);
+	enemies.add(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f),
+		enemies_color_blue, particles_color_1);
 
 	enemies.change_scale_of_all(0.1f, 0.025f);
 }
@@ -167,7 +168,7 @@ void init_game()
 	/* Colors initialization */
 	{
 		terrain_color_1.La = glm::vec3(0.2125f, 0.1275f, 0.054f);
-		terrain_color_1.Ld = glm::vec3(0.714f, 0.428f, 0.181f);
+		terrain_color_1.Ld = glm::vec3(0.214f, 0.428f, 0.181f);
 		terrain_color_1.Ls = glm::vec3(0.393f, 0.271f, 0.166f);
 		terrain_color_1.Ka = glm::vec3(1.0f);
 		terrain_color_1.Kd = glm::vec3(1.0f);
@@ -182,21 +183,37 @@ void init_game()
 		bullet_color_1.Ks = glm::vec3(1.0f);
 		bullet_color_1.shininess = 32.0f;
 
-		bullet_color_2.La = glm::vec3(0.8f, 0.8f, 0.8f);
-		bullet_color_2.Ld = glm::vec3(0.54f, 0.69f, 0.63f);
-		bullet_color_2.Ls = glm::vec3(0.716228f, 0.316228f, 0.716228f);
+		bullet_color_2.La = glm::vec3(1.0f, 1.0f, 1.0f);
+		bullet_color_2.Ld = glm::vec3(0.24f, 0.29f, 0.23f);
+		bullet_color_2.Ls = glm::vec3(0.016228f, 0.016228f, 0.016228f);
 		bullet_color_2.Ka = glm::vec3(1.0f);
 		bullet_color_2.Kd = glm::vec3(1.0f);
 		bullet_color_2.Ks = glm::vec3(1.0f);
 		bullet_color_2.shininess = 32.0f;
 
-		enemies_color_1.La = glm::vec3(0.0215f,	0.1745f,	0.0215f);
-		enemies_color_1.Ld = glm::vec3(0.07568f,	0.61424f,	0.07568f);
-		enemies_color_1.Ls = glm::vec3(0.633f,	0.727811f,	0.633f);
-		enemies_color_1.Ka = glm::vec3(1.0f);
-		enemies_color_1.Kd = glm::vec3(1.0f);
-		enemies_color_1.Ks = glm::vec3(1.0f);
-		enemies_color_1.shininess = 32.0f;
+		enemies_color_green.La = glm::vec3(0.0215f,	0.1745f,	0.0215f);
+		enemies_color_green.Ld = glm::vec3(0.07568f,	0.61424f,	0.07568f);
+		enemies_color_green.Ls = glm::vec3(0.633f,	0.727811f,	0.633f);
+		enemies_color_green.Ka = glm::vec3(1.0f);
+		enemies_color_green.Kd = glm::vec3(1.0f);
+		enemies_color_green.Ks = glm::vec3(1.0f);
+		enemies_color_green.shininess = 32.0f;
+
+		enemies_color_blue.La = glm::vec3(0.0215f, 0.0745f, 0.615f);
+		enemies_color_blue.Ld = glm::vec3(0.07568f, 0.61424f, 0.07568f);
+		enemies_color_blue.Ls = glm::vec3(0.633f, 0.727811f, 0.633f);
+		enemies_color_blue.Ka = glm::vec3(1.0f);
+		enemies_color_blue.Kd = glm::vec3(1.0f);
+		enemies_color_blue.Ks = glm::vec3(1.0f);
+		enemies_color_blue.shininess = 32.0f;
+
+		enemies_color_yellow.La = glm::vec3(0.215f, 0.2745f, 0.2515f);
+		enemies_color_yellow.Ld = glm::vec3(0.17568f, 0.11424f, 0.17568f);
+		enemies_color_yellow.Ls = glm::vec3(0.133f, 0.127811f, 0.133f);
+		enemies_color_yellow.Ka = glm::vec3(1.0f);
+		enemies_color_yellow.Kd = glm::vec3(1.0f);
+		enemies_color_yellow.Ks = glm::vec3(1.0f);
+		enemies_color_yellow.shininess = 32.0f;
 
 		spaceship_color.La = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		spaceship_color.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
@@ -206,7 +223,7 @@ void init_game()
 		spaceship_color.Ks = glm::vec3(1.0f);
 		spaceship_color.shininess = 32.0f;
 
-		particles_color_1.La = glm::vec3(1.0f, 1.0f, 0.0f);
+		particles_color_1.La = glm::vec3(1.0f, 1.0f, 1.0f);
 		particles_color_1.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
 		particles_color_1.Ls = glm::vec3(0.727f, 0.626f, 0.626f);
 		particles_color_1.Ka = glm::vec3(1.0f);
@@ -224,7 +241,7 @@ void init_game()
 		
 		// Player
 		main_player.init(instanced_model_shader, model_folder + "spaceship_main.model",
-			glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z), spaceship_color,
+			glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z - 0.8f), spaceship_color,
 			model_folder + "bullet.model", bullet_color_1);
 		main_player.change_scale(0.1f);
 	}
@@ -261,7 +278,7 @@ void display(GLFWwindow *window)
 {
 	glm::vec3 camLookAt = glm::vec3(0.0f, 0.0f, spaceship_pos.z);
 	glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-	glm::mat4 projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.1f, 5.0f);
+	glm::mat4 projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.01f, 10.0f);
 	// glm::mat4 projection = glm::perspective(fov, window_dims.x / window_dims.y, 0.1f, 20.0f);
 
 	{
@@ -274,7 +291,6 @@ void display(GLFWwindow *window)
 		glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
-		
 		
 		im_terrain_start.draw(GL_TRIANGLES);
 		im_terrain_mid.draw(GL_TRIANGLES);
@@ -386,31 +402,6 @@ void mouse_button(GLFWwindow *window, int button, int action, int mods)
 {
 }
 
-/*
-	void mouse_scroll(GLFWwindow *window, double xoffset, double yoffset)
-	{
-	switch ((int)yoffset)
-	{
-	case 1:                  // Scroll Up
-	scaleFactor += 0.5f; // Increase scale
-	break;
-
-	case -1:                 // Scroll Down
-	scaleFactor *= 0.5f; // Decrease scale
-	break;
-	}
-
-// Update scales
-//spaceship_scale *= scaleFactor;
-terrainStart_scale *= scaleFactor;
-
-// Print info
-std::printf("New scale factor: %0.3f\n", scaleFactor);
-//std::printf("New Spaceship Scale: (%.9f, %.9f, %.9f)\n", spaceship_scale.x, spaceship_scale.y, spaceship_scale.z);
-std::printf("New Terrain Scale: (%.2f, %.2f, %.2f)\n", terrainStart_scale.x, terrainStart_scale.y, terrainStart_scale.z);
-}
- */
-
 void resize(GLFWwindow *window, int width, int height)
 {
 	std::printf("New window dimensions: (%.2u, %.2u)\n", width, height);
@@ -431,12 +422,11 @@ void init_game_music()
 	}
 	else {
 		background_music.play();
-		background_music.setVolume(10.0f);
+		background_music.setVolume(20.0f);
 		background_music.setLoop(true);
 	}
 	/* Game Background Music */
 }
-
 
 int main(void)
 {
@@ -466,7 +456,6 @@ int main(void)
 	glfwSetKeyCallback(window, keyboard);
 	// glfwSetCursorPosCallback(window, mouse_cursor);
 	glfwSetMouseButtonCallback(window, mouse_button);
-	//glfwSetScrollCallback(window, mouse_scroll);
 	glfwSetWindowSizeCallback(window, resize);
 	glEnable(GL_DEPTH_TEST);
 	glfwSwapInterval(1);
