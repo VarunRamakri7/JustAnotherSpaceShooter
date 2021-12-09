@@ -440,7 +440,9 @@ void idle()
 
 	// Move camera and all Spaceships
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	main_player.set_player_bullet_speed(deltaTime * moveFactor * 1.7f);
 	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
+	enemies.set_enemy_bullet_speed(deltaTime * moveFactor * -0.02f);
 	camera_pos.z += deltaTime * moveFactor;
 }
 

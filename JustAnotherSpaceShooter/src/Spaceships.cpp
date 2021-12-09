@@ -114,6 +114,11 @@ void Player::update(Enemies *enemies)
 	}
 }
 
+void Player::set_player_bullet_speed(float speed)
+{
+	this->bullet_speed = speed;
+}
+
 void Player::shoot_bullet()
 {
 	if (bullets_shot < total_ammo) {
@@ -181,7 +186,7 @@ void Player::init(GLuint program_id,
 
 	bullets.init(bullet_model_filename, program_id);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = 0.3f; // Note: Increase this if the bullet seems to be moving backward
+	this->bullet_speed = 0;
 
 	this->bullets_shot = 0;
 	for (unsigned int i = 0; i < total_ammo; ++i)
@@ -218,6 +223,11 @@ void Spaceships::show()
 	spaceship_im.draw(GL_TRIANGLES);
 }
 
+void Enemies::set_enemy_bullet_speed(float speed)
+{
+	bullet_speed = speed;
+}
+
 void Enemies::reset(std::vector<glm::vec3> new_enemy_positions)
 {
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
@@ -252,7 +262,7 @@ void Enemies::init(GLuint program_id, std::string enemy_model_filename,
 	this->bullets_shot = (unsigned int*)malloc(sizeof(unsigned int) * MAX_INSTANCED_MODELS);
 	this->enemy_destroyed = (bool*)malloc(sizeof(bool) * MAX_INSTANCED_MODELS);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = -0.001f;
+	this->bullet_speed = 0;
 	this->particle_effect_model_filename = particle_effect_model_filename;
 	this->particle_effect_program_id = particle_effect_program_id;
 

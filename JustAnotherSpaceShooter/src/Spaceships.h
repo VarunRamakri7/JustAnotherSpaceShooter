@@ -63,6 +63,7 @@ public:
 	void destroy();
 	bool is_destroyed() { return player_destroyed; }
 	unsigned int get_remaining_ammo() { return total_ammo - bullets_shot; }
+	void set_player_bullet_speed(float speed);
 };
 
 class Enemies {
@@ -98,6 +99,7 @@ public:
 	void set_enemy_destroyed(int index) { enemy_destroyed[index] = true; }
 	bool is_enemy_destroyed(int index) { return enemy_destroyed[index]; }
 	bool are_all_enemies_destroyed();
+	void set_enemy_bullet_speed(float speed);
 };
 
 bool BoxBoxIntersection(glm::vec3 objectMin, glm::vec3 objectMax, glm::vec3 colliderMin, glm::vec3 colliderMax);
