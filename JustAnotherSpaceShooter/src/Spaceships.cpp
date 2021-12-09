@@ -101,7 +101,9 @@ void Player::check_for_collision_with_enemies(Enemies *enemies)
 void Player::reset(glm::vec3 new_position)
 {
 	this->bullets_shot = 0;
+	this->player_destroyed = false;
 	move_position_to(new_position);
+	pe.reset(new_position);
 }
 
 void Player::update(Enemies *enemies)
@@ -124,6 +126,7 @@ void Player::shoot_bullet()
 void Player::move_position_by(glm::vec3 delta)
 {
 	ss.move_position_by(0, delta);
+	pe.move_position_of_all_by(delta);
 	for (unsigned int i = bullets_shot; i < total_ammo; ++i) {
 		bullets.move_position_to(i, ss.get_front_pos(0, false));
 	}
@@ -137,11 +140,15 @@ void Player::move_position_to(glm::vec3 new_position)
 	}
 }
 
-void Player::show(Enemies *enemies)
+void Player::show(float current_global_tick, Enemies *enemies)
 {
-	ss.show();
-	update(enemies);
-	bullets.draw(GL_TRIANGLES);
+	if (!player_destroyed) {
+		ss.show();
+		update(enemies);
+		bullets.draw(GL_TRIANGLES);
+	}
+
+	pe.show(current_global_tick);
 }
 
 void Player::change_scale(float factor)
@@ -159,16 +166,23 @@ glm::vec3 Player::get_front_position()
 	return ss.get_front_pos(0, false);
 }
 
+void Player::destroy()
+{
+	pe.start();
+	player_destroyed_sound.play();
+	player_destroyed = true;
+}
+
 void Player::init(GLuint program_id,
 	std::string player_model_filename, glm::vec3 player_position, Color player_color,
-	std::string bullet_model_filename, Color bullet_color)
+	std::string bullet_model_filename, Color bullet_color, Color particle_color)
 {
 	ss.init(player_model_filename, program_id);
 	ss.add_new_spaceship(player_position, player_color);
 
 	bullets.init(bullet_model_filename, program_id);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = 0.05f;
+	this->bullet_speed = 0.04f;
 
 	this->bullets_shot = 0;
 	for (unsigned int i = 0; i < total_ammo; ++i)
@@ -176,6 +190,8 @@ void Player::init(GLuint program_id,
 		bullets.add(ss.get_front_pos(0, false), bullet_color);
 		bullets.change_scale(i, 0.025f);
 	}
+
+	pe.init("data\\models\\point.model", program_id, player_position, particle_color);
 
 	/* Sound Initialization */
 	if (!shoot_bullet_sound_buffer.loadFromFile("data\\wav\\short_laser.wav")) {
@@ -189,6 +205,11 @@ void Player::init(GLuint program_id,
 	}
 	else {
 		enemy_hit_sound.setBuffer(enemy_hit_sound_buffer);
+	}
+	if (!player_destroyed_sound_buffer.loadFromFile("data\\wav\\player_destroyed.wav")) {
+		std::cout << "Error: Could not load file: data\\wav\\player_destroyed.wav" << std::endl;
+	}
+	else {player_destroyed_sound.setBuffer(player_destroyed_sound_buffer);
 	}
 	/* Sound Initialization */
 }
@@ -232,7 +253,7 @@ void Enemies::init(GLuint program_id, std::string enemy_model_filename,
 	this->bullets_shot = (unsigned int*)malloc(sizeof(unsigned int) * MAX_INSTANCED_MODELS);
 	this->enemy_destroyed = (bool*)malloc(sizeof(bool) * MAX_INSTANCED_MODELS);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = -0.005f;
+	this->bullet_speed = -0.001f;
 	this->particle_effect_model_filename = particle_effect_model_filename;
 	this->particle_effect_program_id = particle_effect_program_id;
 
@@ -274,13 +295,19 @@ void Enemies::add(glm::vec3 position, Color enemy_color, Color particle_color)
 	}
 }
 
-void Enemies::check_if_hit_player(Spaceships* player_ss)
+void Enemies::check_if_hit_player(Player *player)
 {
-	glm::vec3 player_position = player_ss->get_position(0);
-	glm::vec3 player_dims = player_ss->get_dims(0);
+	if (player->is_destroyed())
+		return;
+
+	glm::vec3 player_position = player->get_spaceships()->get_position(0);
+	glm::vec3 player_dims = player->get_spaceships()->get_dims(0);
 
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
+		if (enemy_destroyed[i])
+			continue;
+
 		for (unsigned int j = 0; j < bullets_shot[i]; ++j)
 		{
 			glm::vec3 bullet_position = bullets[i].get_position(j);
@@ -288,8 +315,6 @@ void Enemies::check_if_hit_player(Spaceships* player_ss)
 			glm::vec3 bullet_max_dims = bullet_position + (0.5f * bullet_dims);
 			glm::vec3 bullet_min_dims = bullet_position - (0.5f * bullet_dims);
 
-			glm::vec3 player_position = player_ss->get_position(0);
-			glm::vec3 player_dims = player_ss->get_dims(0);
 			glm::vec3 player_max_pos = player_position + (0.5f * player_dims);
 			glm::vec3 player_min_pos = player_position - (0.5f * player_dims);
 
@@ -297,6 +322,7 @@ void Enemies::check_if_hit_player(Spaceships* player_ss)
 			{
 				std::cout << "Collision between bullet " << j << " and player from enemy " << i << std::endl;
 				bullets[i].move_position_to(i, glm::vec3(i, 0.0f, 0.0f));
+				player->destroy();
 			}
 		}
 	}
@@ -313,7 +339,7 @@ void Enemies::shoot_bullets()
 	}
 }
 
-void Enemies::update(float current_global_tick, Spaceships *player_ss)
+void Enemies::update(float current_global_tick, Player *player)
 {
 	static float local_tick = 0;
 	if (current_global_tick - local_tick >= 2.0f) {
@@ -327,7 +353,7 @@ void Enemies::update(float current_global_tick, Spaceships *player_ss)
 			bullets[i].move_position_by(j, glm::vec3(0, 0, bullet_speed));
 	}
 
-	check_if_hit_player(player_ss);
+	check_if_hit_player(player);
 }
 
 void Enemies::move_position_of_all_by(glm::vec3 delta)
@@ -355,9 +381,9 @@ void Enemies::change_scale_of_all(float enemy_scale_factor, float bullet_scale_f
 	}
 }
 
-void Enemies::show(float current_global_tick, Spaceships *player_ss)
+void Enemies::show(float current_global_tick, Player *player)
 {
-	update(current_global_tick, player_ss);
+	update(current_global_tick, player);
 	ss.show();
 	
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i) {

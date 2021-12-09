@@ -29,15 +29,16 @@ Color enemies_color_green;
 Color enemies_color_blue;
 Color enemies_color_black;
 Color particles_color_1;
+Color particles_color_2;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
 
 // Default window dimensions
-#define WIDTH 1920
-#define HEIGHT 1080
+// #define WIDTH 1920
+// #define HEIGHT 1080
 
-#define X_AXIS_MAX +0.5f
-#define X_AXIS_MIN -0.5f
+// #define X_AXIS_MAX +0.5f
+// #define X_AXIS_MIN -0.5f
 
 Player main_player;
 Enemies enemies;
@@ -54,7 +55,7 @@ float next_formation_start_tick = 0;
 float next_formation_current_tick = 0;
 bool start_formation_delay = false;
 
-glm::vec2 window_dims = glm::vec2(WIDTH, HEIGHT);
+glm::vec2 window_dims = glm::vec2(1920, 1080);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
 const glm::vec3 initial_camera_pos = glm::vec3(0.33971f, 1.14269f, -5.36388f);
@@ -81,6 +82,8 @@ float scaleFactor = 1.0f;
 
 unsigned int current_enemy_formation_index = 0;
 std::vector<std::vector<glm::vec3>> all_enemy_formations;
+
+void reset_game();
 
 void init_all_enemy_formations()
 {
@@ -116,12 +119,12 @@ void init_all_enemy_formations()
 		std::vector<glm::vec3> positions;
 
 		positions.push_back(glm::vec3(0.0f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
-		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
-		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
-		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.5f));
+		positions.push_back(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
 		positions.push_back(glm::vec3(0.1f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
-		positions.push_back(glm::vec3(+0.4f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
-		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 1.2f));
+		positions.push_back(glm::vec3(-0.1f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
 		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
 		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.9f));
 		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.6f));
@@ -131,8 +134,8 @@ void init_all_enemy_formations()
 		positions.push_back(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
 		positions.push_back(glm::vec3(+0.2f, 0.2f, im_terrain_start.get_position(0).z + 0.3f));
 		positions.push_back(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
-		positions.push_back(glm::vec3(-0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
-		positions.push_back(glm::vec3(+0.0f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(-0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
+		positions.push_back(glm::vec3(+0.3f, 0.2f, im_terrain_start.get_position(0).z + 0.0f));
 
 		all_enemy_formations.push_back(positions);
 	}
@@ -158,7 +161,7 @@ void init_terrain()
 	im_terrain_mid.change_scale(0, 0.3784f * upscale_factor);
 	im_terrain_mid.rotate(0, glm::vec3(0, 1, 0), 0);
 	float terrain_mid_depth = im_terrain_mid.get_dims(0).z * 0.95f;
-	for (int i = 1; i < 100; ++i) {
+	for (int i = 1; i < 200; ++i) {
 		glm::vec3 position = glm::vec3(start_position.x, start_position.y, i * terrain_mid_depth);
 		im_terrain_mid.add(position, terrain_color_1);
 		im_terrain_mid.change_scale(i, 0.3784f * upscale_factor);
@@ -171,8 +174,8 @@ void init_terrain()
 	im_terrain_end.init(model_folder + "terrain_end.model", instanced_model_shader);
 	im_terrain_end.add(glm::vec3(0, 0, 0), terrain_color_1);
 	im_terrain_end.change_scale(0, 0.3784f * upscale_factor);
-	glm::vec3 d2 = im_terrain_mid.get_dims(99);
-	glm::vec3 last_mid_pos = im_terrain_mid.get_front_pos(99, false);
+	glm::vec3 d2 = im_terrain_mid.get_dims(199);
+	glm::vec3 last_mid_pos = im_terrain_mid.get_front_pos(199, false);
 	im_terrain_end.move_position_to(0, glm::vec3(0, 0, last_mid_pos.z + d2.z / 2.0f * 0.9f));
 }
 
@@ -279,13 +282,13 @@ void init_game()
 		enemies_color_blue.Ks = glm::vec3(1.0f);
 		enemies_color_blue.shininess = 32.0f;
 
-		enemies_color_black.La = glm::vec3(0.115f, 0.1745f, 0.1515f);
-		enemies_color_black.Ld = glm::vec3(0.17568f, 0.11424f, 0.17568f);
-		enemies_color_black.Ls = glm::vec3(0.133f, 0.127811f, 0.133f);
+		enemies_color_black.La = glm::vec3(0.1f,	0.1f,	0.0f);
+		enemies_color_black.Ld = glm::vec3(0.7f,	0.7f,	0.0f);
+		enemies_color_black.Ls = glm::vec3(0.70f,	0.70f,	0.30f);
 		enemies_color_black.Ka = glm::vec3(1.0f);
 		enemies_color_black.Kd = glm::vec3(1.0f);
 		enemies_color_black.Ks = glm::vec3(1.0f);
-		enemies_color_black.shininess = 32.0f;
+		enemies_color_black.shininess = 64.0f;
 
 		spaceship_color.La = glm::vec3(0.1745f, 0.01175f, 0.01175f);
 		spaceship_color.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
@@ -302,9 +305,17 @@ void init_game()
 		particles_color_1.Kd = glm::vec3(1.0f);
 		particles_color_1.Ks = glm::vec3(1.0f);
 		particles_color_1.shininess = 32.0f;
+
+		particles_color_2.La = glm::vec3(1.0f, 0.0f, 1.0f);
+		particles_color_2.Ld = glm::vec3(0.614f, 0.041f, 0.041f);
+		particles_color_2.Ls = glm::vec3(0.727f, 0.626f, 0.626f);
+		particles_color_2.Ka = glm::vec3(1.0f);
+		particles_color_2.Kd = glm::vec3(1.0f);
+		particles_color_2.Ks = glm::vec3(1.0f);
+		particles_color_2.shininess = 32.0f;
 	}
 
-	/* Model initialization */
+	/* Main Entities initialization */
 	{
 		std::string model_folder = "data\\models\\";
 
@@ -314,7 +325,7 @@ void init_game()
 		// Player
 		main_player.init(instanced_model_shader, model_folder + "spaceship_main.model",
 			glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z - 0.8f), spaceship_color,
-			model_folder + "bullet.model", bullet_color_1);
+			model_folder + "bullet.model", bullet_color_1, particles_color_2);
 		main_player.change_scale(0.1f);
 	}
 
@@ -333,14 +344,21 @@ void draw_gui(GLFWwindow *window)
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	/*
-		ImGui::Begin("Debug Game");
+	{
+		ImGui::Begin("Stats");
 		ImGui::SetWindowFontScale(1.5f);
-		ImGui::SetWindowSize(ImVec2(700, 350));
+		ImGui::SetWindowSize(ImVec2(300, 220));
+		ImGui::SetWindowPos(ImVec2(0, window_dims.y - 220));
 		{
+			ImGui::Text("Controls:\n   Space: shoot\n   A: Move left\n   D: Move right\n   Esc: Quit");
+			ImGui::Text("Ammo remaining: %d\n", main_player.get_remaining_ammo());
+			ImGui::Text("Current level: %d\n", current_enemy_formation_index + 1);
+			if (ImGui::Button("Reset Game"))
+				reset_game();
 		}
 		ImGui::End();
-	 */
+	}
+	 
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -367,8 +385,8 @@ void display(GLFWwindow *window)
 		im_terrain_start.draw(GL_TRIANGLES);
 		im_terrain_mid.draw(GL_TRIANGLES);
 		im_terrain_end.draw(GL_TRIANGLES);
-		main_player.show(&enemies);
-		enemies.show(glfwGetTime(), main_player.get_spaceships());
+		main_player.show(glfwGetTime(), &enemies);
+		enemies.show(glfwGetTime(), &main_player);
 	}
 
 	// std::cout << "pos: " << camera_pos.x << ", " << camera_pos.y << ", " << camera_pos.z << std::endl;
@@ -392,9 +410,23 @@ void reset_and_goto_next_formation()
 	camera_pos = initial_camera_pos;
 }
 
+void reset_game()
+{
+	start_formation_delay = false;
+	next_formation_current_tick = 0;
+	next_formation_start_tick = 0;
+
+	current_enemy_formation_index = 0;
+
+	enemies.reset(all_enemy_formations[current_enemy_formation_index]);
+	main_player.reset(glm::vec3(0, +0.2f, im_terrain_start.get_position(0).z - 0.8f));
+	camera_pos = initial_camera_pos;
+}
+
 void idle()
 {
-	if (enemies.are_all_enemies_destroyed() && start_formation_delay == false) {
+	if ((enemies.are_all_enemies_destroyed() || main_player.is_destroyed())
+		&& start_formation_delay == false) {
 		start_formation_delay = true;
 		next_formation_start_tick = glfwGetTime();
 		next_formation_current_tick = next_formation_start_tick;
@@ -405,7 +437,10 @@ void idle()
 
 	if (start_formation_delay && (next_formation_current_tick - next_formation_start_tick)
 		>= delay_to_next_formation) {
-		reset_and_goto_next_formation();
+		if (enemies.are_all_enemies_destroyed())
+			reset_and_goto_next_formation();
+		else if (main_player.is_destroyed())
+			reset_game();
 	}
 
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
