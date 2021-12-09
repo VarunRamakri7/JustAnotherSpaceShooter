@@ -41,19 +41,21 @@ InstancedModel im_terrain_end;
 
 sf::Music background_music;
 
+// Formation related data
 float delay_to_next_formation = 2.0f;
 float next_formation_start_tick = 0;
 float next_formation_current_tick = 0;
 bool start_formation_delay = false;
 
+// Window related data
 glm::vec2 window_dims = glm::vec2(1920, 1080);
 float aspectRatio = (float)window_dims.x / window_dims.y; // Window aspect ratio
 
+// Camera related data
 const glm::vec3 initial_camera_pos = glm::vec3(0.33971f, 1.14269f, -5.36388f);
 glm::vec3 camera_pos = initial_camera_pos;
 glm::vec3 camera_front = glm::vec3(-0.0931682f, -0.297374f, 0.950204f);
 glm::vec3 camera_up    = glm::vec3(0.0f, 1.0f, 0.0f);
-
 bool firstMouse = true;
 float yaw   = 90.0f;
 float pitch =  0.0f;
@@ -177,6 +179,8 @@ void init_enemies()
 	enemies.init(instanced_model_shader, model_folder + "enemy_1.model",
 		model_folder + "bullet.model", bullet_color_2,
 		model_folder + "point.model", instanced_model_shader);	
+
+	// Add all enemies and set theire position
 	enemies.add(glm::vec3(0, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
 		enemies_color_green, particles_color_1);
 	enemies.add(glm::vec3(-0.2f, 0.2f, im_terrain_start.get_position(0).z + 1.2f),
@@ -434,6 +438,7 @@ void idle()
 			reset_game();
 	}
 
+	// Move camera and all Spaceships
 	main_player.move_position_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	enemies.move_position_of_all_by(glm::vec3(0, 0, deltaTime * moveFactor));
 	camera_pos.z += deltaTime * moveFactor;
@@ -445,11 +450,12 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 	window_dims = glm::vec2(width, height);
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	// Move camera
 	float cameraSpeed = 0.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		camera_pos += cameraSpeed * camera_front;
@@ -460,6 +466,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
 
+	// Flight controls
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		main_player.move_position_by(glm::vec3(0, 0, moveFactor * deltaTime));
 		enemies.move_position_of_all_by(glm::vec3(0, 0, moveFactor * deltaTime));
@@ -485,9 +492,9 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		switch (key)
 		{
-		case 32: // Space
-			main_player.shoot_bullet();
-			break;
+			case 32: // Space
+				main_player.shoot_bullet();
+				break;
 		}
 	}
 }
@@ -525,9 +532,9 @@ void mouse_cursor(GLFWwindow *window, double xpos, double ypos)
 	camera_front = glm::normalize(direction);
 }
 
-void mouse_button(GLFWwindow *window, int button, int action, int mods)
+/*void mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
-}
+}*/
 
 void resize(GLFWwindow *window, int width, int height)
 {
@@ -570,8 +577,7 @@ int main(void)
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height,"Just Another Space Shooter",
-		primary_monitor, NULL);
+	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, window_name, primary_monitor, NULL);
 	// GLFWwindow* window = glfwCreateWindow(1024, 768, "Just Another Space Shooter", NULL, NULL);
 	
 	window_dims.x = mode->width;
@@ -582,7 +588,7 @@ int main(void)
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSetKeyCallback(window, keyboard);
 	// glfwSetCursorPosCallback(window, mouse_cursor);
-	glfwSetMouseButtonCallback(window, mouse_button);
+	///glfwSetMouseButtonCallback(window, mouse_button);
 	glfwSetWindowSizeCallback(window, resize);
 	glEnable(GL_DEPTH_TEST);
 	glfwSwapInterval(1);
