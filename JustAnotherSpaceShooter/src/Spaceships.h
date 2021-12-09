@@ -76,6 +76,8 @@ private:
 	float bullet_speed;
 	unsigned int *bullets_shot;
 	bool* enemy_destroyed;
+	float initial_shoot_bullet_delay;
+	float init_start_tick;
 
 	GLuint particle_effect_program_id;
 	std::string particle_effect_model_filename;

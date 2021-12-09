@@ -1,5 +1,6 @@
 #include "Spaceships.h"
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 void Spaceships::init(std::string model_filename, GLuint program_id) 
 {
@@ -230,6 +231,8 @@ void Enemies::set_enemy_bullet_speed(float speed)
 
 void Enemies::reset(std::vector<glm::vec3> new_enemy_positions)
 {
+	init_start_tick = glfwGetTime();
+
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)
 	{
 		enemy_destroyed[i] = false;
@@ -265,6 +268,7 @@ void Enemies::init(GLuint program_id, std::string enemy_model_filename,
 	this->bullet_speed = 0;
 	this->particle_effect_model_filename = particle_effect_model_filename;
 	this->particle_effect_program_id = particle_effect_program_id;
+	this->init_start_tick = glfwGetTime();
 
 	if (bullets)
 		for (unsigned int i = 0; i < MAX_INSTANCED_MODELS; ++i)
@@ -353,7 +357,8 @@ void Enemies::update(float current_global_tick, Player *player)
 	static float local_tick = 0;
 	if (current_global_tick - local_tick >= 2.0f) {
 		local_tick = current_global_tick;
-		shoot_bullets();
+		if((current_global_tick - init_start_tick) >= 3.0f)
+			shoot_bullets();
 	}
 
 	for (unsigned int i = 0; i < ss.get_current_num_spaceships(); ++i)

@@ -376,10 +376,11 @@ void display(GLFWwindow *window)
 		glUniformMatrix4fv(view_loc, 1, false, glm::value_ptr(view));
 		glUniform3fv(lightDirection_loc, 1, glm::value_ptr(light_direction_1));
 		glUniform3fv(viewPosition_loc, 1, glm::value_ptr(camera_pos));
-		
+
 		im_terrain_start.draw(GL_TRIANGLES);
 		im_terrain_mid.draw(GL_TRIANGLES);
 		im_terrain_end.draw(GL_TRIANGLES);
+
 		main_player.show(glfwGetTime(), &enemies);
 		enemies.show(glfwGetTime(), &main_player);
 	}
@@ -392,10 +393,6 @@ void display(GLFWwindow *window)
 
 void reset_and_goto_next_formation()
 {
-	start_formation_delay = false;
-	next_formation_current_tick = 0;
-	next_formation_start_tick = 0;
-
 	current_enemy_formation_index += 1;
 	if (current_enemy_formation_index >= all_enemy_formations.size())
 		current_enemy_formation_index = 0;
@@ -407,10 +404,6 @@ void reset_and_goto_next_formation()
 
 void reset_game()
 {
-	start_formation_delay = false;
-	next_formation_current_tick = 0;
-	next_formation_start_tick = 0;
-
 	current_enemy_formation_index = 0;
 
 	enemies.reset(all_enemy_formations[current_enemy_formation_index]);
@@ -432,6 +425,10 @@ void idle()
 
 	if (start_formation_delay && (next_formation_current_tick - next_formation_start_tick)
 		>= delay_to_next_formation) {
+		start_formation_delay = false;
+		next_formation_current_tick = 0;
+		next_formation_start_tick = 0;
+
 		if (enemies.are_all_enemies_destroyed())
 			reset_and_goto_next_formation();
 		else if (main_player.is_destroyed())
