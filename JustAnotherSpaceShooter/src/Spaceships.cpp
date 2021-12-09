@@ -181,7 +181,7 @@ void Player::init(GLuint program_id,
 
 	bullets.init(bullet_model_filename, program_id);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = 0.3f;
+	this->bullet_speed = 0.3f; // Note: Increase this if the bullet seems to be moving backward
 
 	this->bullets_shot = 0;
 	for (unsigned int i = 0; i < total_ammo; ++i)
