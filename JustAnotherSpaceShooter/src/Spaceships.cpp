@@ -61,7 +61,6 @@ bool Spaceships::GetCollisionStatus()
 	return spaceship_im.GetCollisionStatus();
 }
 
-/* @NOTE: This function is incorrect */
 void Player::check_for_collision_with_enemies(Enemies *enemies)
 {
 	Spaceships* enemies_ss = enemies->get_spaceships();
@@ -182,7 +181,7 @@ void Player::init(GLuint program_id,
 
 	bullets.init(bullet_model_filename, program_id);
 	this->bullet_color = bullet_color;
-	this->bullet_speed = 0.04f;
+	this->bullet_speed = 0.25f;
 
 	this->bullets_shot = 0;
 	for (unsigned int i = 0; i < total_ammo; ++i)
