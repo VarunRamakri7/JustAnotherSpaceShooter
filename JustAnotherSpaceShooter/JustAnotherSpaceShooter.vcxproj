@@ -95,7 +95,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)/libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,7 +115,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)/libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,7 +131,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)/libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +151,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)/libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp.lib;freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;FreeImage.lib;glew32.lib;glfw3dll.lib;sfml-audio-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -167,16 +167,12 @@
     <ClCompile Include="src\InitShader.cpp" />
     <ClCompile Include="src\InstancedModel.cpp" />
     <ClCompile Include="src\JustAnotherSpaceShooter.cpp" />
-    <ClCompile Include="src\LoadMesh.cpp" />
-    <ClCompile Include="src\LoadTexture.cpp" />
     <ClCompile Include="src\ParticleEffects.cpp" />
     <ClCompile Include="src\Spaceships.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InitShader.h" />
     <ClInclude Include="src\InstancedModel.h" />
-    <ClInclude Include="src\LoadMesh.h" />
-    <ClInclude Include="src\LoadTexture.h" />
     <ClInclude Include="src\ParticleEffects.h" />
     <ClInclude Include="src\Spaceships.h" />
   </ItemGroup>

@@ -15,8 +15,6 @@
 #include <SFML/Audio.hpp>
 
 #include "InitShader.h"
-#include "LoadMesh.h"
-#include "LoadTexture.h"
 #include "InstancedModel.h"
 #include "Spaceships.h"
 #include "ParticleEffects.h"
@@ -32,13 +30,6 @@ Color particles_color_1;
 Color particles_color_2;
 glm::vec3 light_position_1;
 glm::vec3 light_direction_1;
-
-// Default window dimensions
-// #define WIDTH 1920
-// #define HEIGHT 1080
-
-// #define X_AXIS_MAX +0.5f
-// #define X_AXIS_MIN -0.5f
 
 Player main_player;
 Enemies enemies;
